@@ -1,0 +1,100 @@
+<div class="admin-page__header">
+  <h2 class="font-display">New match</h2>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+  <label class="admin-form__field">
+    <span>Match name</span>
+    <input type="text" formControlName="name" placeholder="Mumbai Tigers vs Delhi Dragons" />
+    @if (form.controls.name.invalid && form.controls.name.touched) {
+      <small class="admin-form__error">Match name is required</small>
+    }
+  </label>
+
+  <div class="admin-form__field">
+    <span>Match mode</span>
+    <div class="match-form__mode-toggle">
+      <button
+        type="button"
+        class="match-form__mode-btn"
+        [class.match-form__mode-btn--active]="form.controls.mode.value === 'single'"
+        (click)="onModeChange('single')"
+      >
+        Single match
+      </button>
+      <button
+        type="button"
+        class="match-form__mode-btn"
+        [class.match-form__mode-btn--active]="form.controls.mode.value === 'tournament'"
+        (click)="onModeChange('tournament')"
+      >
+        Tournament match
+      </button>
+    </div>
+  </div>
+
+  @if (form.controls.mode.value === 'tournament') {
+    <label class="admin-form__field">
+      <span>Tournament</span>
+      <select formControlName="tournament">
+        <option value="">Select a tournament</option>
+        @for (tournament of tournaments(); track tournament._id) {
+          <option [value]="tournament._id">{{ tournament.name }}</option>
+        }
+      </select>
+    </label>
+  }
+
+  <div class="admin-form__row">
+    <label class="admin-form__field">
+      <span>Team A</span>
+      <select formControlName="teamA">
+        <option value="">Select team A</option>
+        @for (team of availableTeams(); track team._id) {
+          <option [value]="team._id">{{ team.name }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="admin-form__field">
+      <span>Team B</span>
+      <select formControlName="teamB">
+        <option value="">Select team B</option>
+        @for (team of availableTeams(); track team._id) {
+          <option [value]="team._id">{{ team.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <div class="admin-form__row">
+    <label class="admin-form__field">
+      <span>Match type</span>
+      <select [value]="form.controls.matchType.value" (change)="onMatchTypeChange($any($event.target).value)">
+        @for (type of matchTypes; track type) {
+          <option [value]="type">{{ type }}</option>
+        }
+      </select>
+    </label>
+
+    <label class="admin-form__field">
+      <span>Overs per innings</span>
+      <input type="number" formControlName="overs" min="1" />
+    </label>
+  </div>
+
+  <label class="admin-form__field">
+    <span>Venue (optional)</span>
+    <input type="text" formControlName="venue" placeholder="Wankhede Stadium" />
+  </label>
+
+  <div class="admin-form__actions">
+    <button type="submit" class="admin-form__submit" [disabled]="loading()">
+      @if (loading()) {
+        <span class="admin-form__spinner"></span>
+      }
+      Create match
+    </button>
+    <a routerLink="/admin/matches" class="admin-form__cancel">Cancel</a>
+  </div>
+</form>

@@ -1,0 +1,47 @@
+<div class="admin-page__header">
+  <h2 class="font-display">{{ isEditMode() ? 'Edit team' : 'New team' }}</h2>
+</div>
+
+@if (loadingExisting()) {
+  <p>Loading team details...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+    <label class="admin-form__field">
+      <span>Team name</span>
+      <input type="text" formControlName="name" placeholder="Mumbai Tigers" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <small class="admin-form__error">Team name is required</small>
+      }
+    </label>
+
+    <label class="admin-form__field">
+      <span>Short name</span>
+      <input type="text" formControlName="shortName" placeholder="MUT" maxlength="6" />
+      @if (form.controls.shortName.invalid && form.controls.shortName.touched) {
+        <small class="admin-form__error">Short name is required (max 6 characters)</small>
+      }
+    </label>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Home ground (optional)</span>
+        <input type="text" formControlName="homeGround" placeholder="Wankhede Stadium" />
+      </label>
+
+      <label class="admin-form__field">
+        <span>Coach (optional)</span>
+        <input type="text" formControlName="coach" placeholder="Coach name" />
+      </label>
+    </div>
+
+    <div class="admin-form__actions">
+      <button type="submit" class="admin-form__submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="admin-form__spinner"></span>
+        }
+        {{ isEditMode() ? 'Save changes' : 'Create team' }}
+      </button>
+      <a routerLink="/admin/teams" class="admin-form__cancel">Cancel</a>
+    </div>
+  </form>
+}

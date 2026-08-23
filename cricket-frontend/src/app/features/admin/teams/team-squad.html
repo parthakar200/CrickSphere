@@ -1,0 +1,87 @@
+@if (team(); as t) {
+<div class="admin-page__header">
+  <div>
+    <h2 class="font-display">{{ t.name }} — Squad</h2>
+    <a [routerLink]="['/admin/teams']" class="team-squad__back">← Back to teams</a>
+  </div>
+</div>
+
+@if (!t.tournament) {
+<div class="admin-empty">
+  <span class="material-icons">info</span>
+  <p>
+    This is a standalone team, used for single matches. Standalone teams don't have a squad — Playing XI is picked
+    fresh for each single match instead.
+  </p>
+</div>
+} @else {
+<div class="team-squad__add">
+  <div class="team-squad__picker">
+    <input type="text" placeholder="Select a player to add..." [ngModel]="playerSearch()"
+      [ngModelOptions]="{ standalone: true }" (ngModelChange)="onSearchInput($event)" (focus)="openPicker()"
+      (blur)="closePickerSoon()" />
+    @if (pickerOpen()) {
+    <div class="team-squad__picker-list">
+      @if (filteredPlayers().length === 0) {
+      <div class="team-squad__picker-empty">No matching players</div>
+      } @else {
+      @for (player of filteredPlayers(); track player._id) {
+      <button type="button" class="team-squad__picker-option"
+        [class.team-squad__picker-option--taken]="player.takenByTeam" [disabled]="!!player.takenByTeam"
+        (mousedown)="pickPlayer(player)">
+        {{ player.name }} <span>({{ player.role }})</span>
+        @if (player.takenByTeam) {
+        <span class="team-squad__picker-taken-tag">already in {{ player.takenByTeam }}</span>
+        }
+      </button>
+      }
+      }
+    </div>
+    }
+  </div>
+  <button type="button" class="admin-page__create-btn" [disabled]="!selectedPlayerId() || adding()"
+    (click)="addToSquad()">
+    <span class="material-icons">add</span> Add to squad
+  </button>
+</div>
+
+@if (squad().length === 0) {
+<div class="admin-empty">
+  <span class="material-icons">groups</span>
+  <p>No players registered to this squad yet.</p>
+</div>
+} @else {
+<div class="admin-table-wrap">
+  <table class="admin-table">
+    <thead>
+      <tr>
+        <th>Player</th>
+        <th>Role</th>
+        <th>Joined</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      @for (entry of squad(); track entry._id) {
+      <tr>
+        <td>{{ entry.player.name }}</td>
+        <td><span class="admin-table__badge">{{ entry.player.role }}</span></td>
+        <td>{{ entry.joinedAt | date: 'mediumDate' }}</td>
+        <td>
+          <div class="admin-table__actions">
+            <button type="button" class="admin-table__icon-btn admin-table__icon-btn--danger" title="Remove"
+              (click)="removeFromSquad(entry.player._id, entry.player.name)">
+              <span class="material-icons">delete</span>
+            </button>
+          </div>
+        </td>
+      </tr>
+      }
+    </tbody>
+  </table>
+</div>
+}
+}
+} @else {
+<p>Loading team...</p>
+}

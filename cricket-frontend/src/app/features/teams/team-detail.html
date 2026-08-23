@@ -1,0 +1,43 @@
+@if (team(); as t) {
+  <div class="team-detail">
+    <header class="team-detail__header card-flat">
+      <div class="team-detail__logo">{{ t.shortName.charAt(0) }}</div>
+      <div>
+        <h1 class="font-display">{{ t.name }}</h1>
+        <p class="team-detail__meta">
+          {{ t.shortName }}
+          @if (t.homeGround) { · {{ t.homeGround }} }
+          @if (t.coach) { · Coach: {{ t.coach }} }
+        </p>
+      </div>
+    </header>
+
+    <h2 class="font-display team-detail__roster-title">Squad ({{ roster().length }})</h2>
+
+    @if (isStandalone()) {
+      <p class="team-detail__empty">
+        This is a standalone team, used for single matches. It doesn't have a fixed squad — the Playing XI is picked
+        fresh for each match instead.
+      </p>
+    } @else if (roster().length === 0) {
+      <p class="team-detail__empty">No players registered to this team's squad yet.</p>
+    } @else {
+      <div class="team-detail__roster-grid">
+        @for (player of roster(); track player._id) {
+          <a [routerLink]="['/players', player._id]" class="roster-card card-flat">
+            <div class="roster-card__avatar">{{ player.name.charAt(0) }}</div>
+            <div class="roster-card__body">
+              <strong>{{ player.name }}</strong>
+              <span class="team-detail__badge" [class]="roleBadgeClass(player.role)">{{ player.role }}</span>
+            </div>
+            @if (player.jerseyNumber) {
+              <span class="roster-card__jersey font-mono">#{{ player.jerseyNumber }}</span>
+            }
+          </a>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <p>Loading team...</p>
+}

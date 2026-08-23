@@ -1,0 +1,19 @@
+<div class="admin">
+  <header class="admin__header">
+    <h1 class="font-display">Admin Panel</h1>
+    <p>Create and manage teams, players, tournaments, and matches.</p>
+  </header>
+
+  <nav class="admin__tabs">
+    @for (tab of tabs; track tab.route) {
+      <a [routerLink]="tab.route" routerLinkActive="admin__tab--active" class="admin__tab">
+        <span class="material-icons">{{ tab.icon }}</span>
+        {{ tab.label }}
+      </a>
+    }
+  </nav>
+
+  <div class="admin__content">
+    <router-outlet />
+  </div>
+</div>

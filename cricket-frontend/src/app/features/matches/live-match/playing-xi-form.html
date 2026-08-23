@@ -1,0 +1,101 @@
+<div class="playing-xi-form card-flat">
+  <h2 class="font-display">Set the Playing XI</h2>
+  <p>Pick who's playing for each side. A player can only be picked for one side of this match.</p>
+
+  @if (loading()) {
+    <p>Loading eligible players...</p>
+  } @else if (loadError()) {
+    <div class="playing-xi-form__warning">
+      <span class="material-icons">warning</span>
+      <span>Couldn't load eligible players. Refresh and try again.</span>
+    </div>
+  } @else if (eligibleA().length === 0 || eligibleB().length === 0) {
+    <div class="playing-xi-form__warning">
+      <span class="material-icons">warning</span>
+      <span>
+        @if (eligibleA().length === 0 && eligibleB().length === 0) {
+          Neither team has any eligible players yet.
+        } @else if (eligibleA().length === 0) {
+          {{ teamAName() }} has no eligible players yet.
+        } @else {
+          {{ teamBName() }} has no eligible players yet.
+        }
+        For a tournament match, register a squad for this team first. For a single match, add players in Admin → Players.
+      </span>
+    </div>
+  } @else {
+    <div class="playing-xi-form__columns">
+      <div class="playing-xi-form__column">
+        <h3>{{ teamAName() }} <span class="playing-xi-form__count">{{ selectedACount() }} selected</span></h3>
+        <label class="playing-xi-form__select-all">
+  <input type="checkbox" [checked]="allVisibleSelectedA()" (change)="toggleSelectAllA()" />
+  <span>Select all</span>
+</label>
+        <input
+          type="text"
+          class="playing-xi-form__search"
+          placeholder="Search {{ teamAName() }} players..."
+          [ngModel]="searchA()"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="searchA.set($event)"
+        />
+        <div class="playing-xi-form__list">
+          @if (filteredA().length === 0) {
+            <p class="playing-xi-form__no-match">No matching players</p>
+          } @else {
+            @for (player of filteredA(); track player._id) {
+              <label class="playing-xi-form__player" [class.playing-xi-form__player--disabled]="isPickedElsewhereOfA(player._id)">
+                <input
+                  type="checkbox"
+                  [checked]="isPickedA(player._id)"
+                  [disabled]="isPickedElsewhereOfA(player._id)"
+                  (change)="toggleA(player._id)"
+                />
+                <span>{{ player.name }}</span>
+                <span class="playing-xi-form__role">{{ player.role }}</span>
+              </label>
+            }
+          }
+        </div>
+      </div>
+
+      <div class="playing-xi-form__column">
+        <h3>{{ teamBName() }} <span class="playing-xi-form__count">{{ selectedBCount() }} selected</span></h3>
+        <label class="playing-xi-form__select-all">
+  <input type="checkbox" [checked]="allVisibleSelectedB()" (change)="toggleSelectAllB()" />
+  <span>Select all</span>
+</label>
+        <input
+          type="text"
+          class="playing-xi-form__search"
+          placeholder="Search {{ teamBName() }} players..."
+          [ngModel]="searchB()"
+          [ngModelOptions]="{ standalone: true }"
+          (ngModelChange)="searchB.set($event)"
+        />
+        <div class="playing-xi-form__list">
+          @if (filteredB().length === 0) {
+            <p class="playing-xi-form__no-match">No matching players</p>
+          } @else {
+            @for (player of filteredB(); track player._id) {
+              <label class="playing-xi-form__player" [class.playing-xi-form__player--disabled]="isPickedElsewhereOfB(player._id)">
+                <input
+                  type="checkbox"
+                  [checked]="isPickedB(player._id)"
+                  [disabled]="isPickedElsewhereOfB(player._id)"
+                  (change)="toggleB(player._id)"
+                />
+                <span>{{ player.name }}</span>
+                <span class="playing-xi-form__role">{{ player.role }}</span>
+              </label>
+            }
+          }
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="playing-xi-form__submit" [disabled]="!canConfirm() || submitting()" (click)="confirm()">
+      @if (submitting()) { Saving... } @else { Confirm Playing XI }
+    </button>
+  }
+</div>

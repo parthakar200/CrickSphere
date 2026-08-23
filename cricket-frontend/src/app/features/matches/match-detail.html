@@ -1,0 +1,115 @@
+@if (match(); as m) {
+  <div class="match-detail">
+    <header class="match-detail__header card-flat">
+      <div>
+        <h1 class="font-display">{{ m.name }}</h1>
+        <p class="match-detail__meta">
+          {{ teamName(m.teamA) }} vs {{ teamName(m.teamB) }}
+          · {{ m.matchType }} · {{ m.overs }} overs
+        </p>
+      </div>
+      <span class="match-detail__badge" [class]="statusBadgeClass(m.status)">{{ m.status }}</span>
+    </header>
+
+    @if (m.status === 'live') {
+      <a [routerLink]="['/matches', m._id, 'live']" class="match-detail__live-link">
+        <span class="material-icons">sensors</span> Go to live scoring
+      </a>
+    }
+
+    @if (innings().length === 0) {
+      <p class="match-detail__empty">This match hasn't started yet.</p>
+    } @else {
+        
+      @for (inn of innings(); track inn._id; let i = $index) {
+
+         @if (i % 2 === 0) {
+            <h2>Match - {{ (i / 2) + 1 }}</h2>
+        }
+        
+        <section class="innings-card card-flat">
+          <header class="innings-card__header">
+            <h2 class="font-display team-name">{{ teamName(inn.battingTeam) }} </h2>
+            <span class="innings-card__score font-mono">
+              {{ inn.totalRuns }}/{{ inn.totalWickets }} ({{ inn.totalOvers.toFixed(1) }} ov)
+            </span>
+          </header>
+
+          @if (didNotBat(inn)) {
+            <p class="match-detail__empty">No balls recorded for this innings yet.</p>
+          } @else {
+            <div class="innings-card__table-wrap">
+              <table class="innings-card__table">
+                <thead>
+                  <tr>
+                    <th>Batting</th>
+                    <th></th>
+                    <th>R</th>
+                    <th>B</th>
+                    <th>4s</th>
+                    <th>6s</th>
+                    <th>SR</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  @for (row of inn.battingStats; track row._id) {
+                    <tr>
+                      <td class="innings-card__player">{{ row.player.name }}</td>
+                      <td class="innings-card__dismissal">{{ dismissalLine(row) }}</td>
+                      <td>{{ row.runs }}</td>
+                      <td>{{ row.ballsFaced }}</td>
+                      <td>{{ row.fours }}</td>
+                      <td>{{ row.sixes }}</td>
+                      <td>{{ row.strikeRate }}</td>
+                    </tr>
+                  }
+                </tbody>
+              </table>
+            </div>
+
+            <div class="innings-card__extras">
+              Extras: {{ inn.extras.wides + inn.extras.noBalls + inn.extras.byes + inn.extras.legByes + inn.extras.penalty }}
+              (wd {{ inn.extras.wides }}, nb {{ inn.extras.noBalls }}, b {{ inn.extras.byes }}, lb {{ inn.extras.legByes }})
+            </div>
+
+            @if (inn.bowlingStats.length > 0) {
+              <div class="innings-card__table-wrap">
+                <table class="innings-card__table">
+                  <thead>
+                    <tr>
+                      <th>Bowling</th>
+                      <th>O</th>
+                      <th>M</th>
+                      <th>R</th>
+                      <th>W</th>
+                      <th>Econ</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    @for (row of inn.bowlingStats; track row._id) {
+                      <tr>
+                        <td class="innings-card__player">{{ row.player.name }}</td>
+                        <td>{{ row.oversBowled }}</td>
+                        <td>{{ row.maidens }}</td>
+                        <td>{{ row.runsConceded }}</td>
+                        <td>{{ row.wickets }}</td>
+                        <td>{{ row.economy }}</td>
+                      </tr>
+                    }
+                  </tbody>
+                </table>
+              </div>
+            }
+          }
+          
+        </section>
+        @if((i+1)%2 === 0){
+            <hr>
+        }
+      }
+    }
+  </div>
+  
+} @else {
+  <p>Loading match...</p>
+}

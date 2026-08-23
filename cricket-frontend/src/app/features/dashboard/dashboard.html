@@ -1,0 +1,78 @@
+<div class="dashboard">
+  <header class="dashboard__header">
+    <div>
+      <h1 class="font-display">Welcome back, {{ auth.currentUser()?.name }}</h1>
+      <p>Here's what's happening across your matches and tournaments.</p>
+    </div>
+    @if (auth.isAdmin()) {
+      <div class="dashboard__header-actions">
+        <a routerLink="/admin/matches/new" class="dashboard__cta">
+          <span class="material-icons">add</span> New match
+        </a>
+        <a routerLink="/admin/tournaments/new" class="dashboard__cta dashboard__cta--secondary">
+          <span class="material-icons">emoji_events</span> New tournament
+        </a>
+      </div>
+    }
+  </header>
+
+  <section class="dashboard__stats">
+    <app-stat-card label="Total Players" [value]="overview().totalPlayers" icon="sports_cricket" accent="electric" />
+    <app-stat-card label="Total Teams" [value]="overview().totalTeams" icon="groups" accent="purple" />
+    <app-stat-card label="Matches Played" [value]="overview().completedMatches" icon="sports" accent="emerald" />
+    <app-stat-card label="Total Runs" [value]="overview().totalRuns" icon="trending_up" accent="electric" />
+    <app-stat-card label="Total Wickets" [value]="overview().totalWickets" icon="sports_baseball" accent="crimson" />
+    <app-stat-card label="Total Sixes" [value]="overview().totalSixes" icon="bolt" accent="amber" />
+  </section>
+
+  @if (liveMatches().length > 0) {
+    <section class="dashboard__live">
+      <h2 class="font-display">
+        <span class="text-live-dot"></span> Live right now
+      </h2>
+      <div class="dashboard__live-grid">
+        @for (match of liveMatches(); track match._id) {
+          <a class="live-card glass-panel" [routerLink]="['/matches', match._id, 'live']">
+            <span class="live-card__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
+            <span class="live-card__meta font-mono">{{ match.matchType }} • {{ match.status }}</span>
+          </a>
+        }
+      </div>
+    </section>
+  }
+
+  <section class="dashboard__charts">
+    <div class="card-flat dashboard__chart-card">
+      <h3 class="font-display">Top run scorers</h3>
+      <app-chart type="bar" [data]="runsChartData()" [height]="260" />
+    </div>
+    <div class="card-flat dashboard__chart-card">
+      <h3 class="font-display">Top wicket takers</h3>
+      <app-chart type="bar" [data]="wicketsChartData()" [height]="260" />
+    </div>
+  </section>
+
+  <section class="dashboard__quick-links">
+    <a routerLink="/leaderboards" class="quick-link card-flat">
+      <span class="material-icons">leaderboard</span>
+      <div>
+        <strong>Leaderboards</strong>
+        <p>Most runs, best strike rate, top wicket takers and more</p>
+      </div>
+    </a>
+    <a routerLink="/tournaments" class="quick-link card-flat">
+      <span class="material-icons">emoji_events</span>
+      <div>
+        <strong>Tournaments</strong>
+        <p>Points tables, schedules, and knockout brackets</p>
+      </div>
+    </a>
+    <a routerLink="/statistics" class="quick-link card-flat">
+      <span class="material-icons">monitoring</span>
+      <div>
+        <strong>Statistics Center</strong>
+        <p>Deep analytics across batting, bowling, and teams</p>
+      </div>
+    </a>
+  </section>
+</div>

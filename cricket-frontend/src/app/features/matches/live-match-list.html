@@ -1,0 +1,69 @@
+<div class="live-list">
+  <header class="live-list__header">
+    <h1 class="font-display"><span class="text-live-dot"></span> Live Match Center</h1>
+    <p>Live matches update automatically. Scheduled matches need a toss before scoring can begin.</p>
+  </header>
+
+  <section>
+    <h2 class="font-display">Live now</h2>
+    @if (liveMatches().length === 0) {
+      <p class="live-list__empty">No matches are live right now.</p>
+    } @else {
+      <div class="live-list__grid">
+        @for (match of liveMatches(); track match._id) {
+          <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card glass-panel">
+            <span class="text-live-dot"></span>
+            <div>
+              <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
+              <span class="live-list__meta font-mono">{{ match.matchType }} · {{ match.overs }} overs</span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  <section>
+    <h2 class="font-display">Scheduled (awaiting toss)</h2>
+    @if (scheduledMatches().length === 0) {
+      <p class="live-list__empty">No scheduled matches awaiting toss.</p>
+    } @else {
+      <div class="live-list__grid">
+        @for (match of scheduledMatches(); track match._id) {
+          <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card card-flat">
+            <span class="material-icons live-list__icon">schedule</span>
+            <div>
+              <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
+              <span class="live-list__meta">{{ match.matchType }} · {{ match.overs }} overs</span>
+            </div>
+          </a>
+        }
+      </div>
+    }
+  </section>
+
+  @if (recentlyCompleted().length > 0) {
+    <section>
+      <h2 class="font-display">Recently completed</h2>
+      <div class="live-list__grid">
+        @for (match of recentlyCompleted(); track match._id) {
+          <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card card-flat">
+            <span class="material-icons live-list__icon">check_circle</span>
+            <div>
+              <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
+              <span class="live-list__meta">
+                @if (match.result.isTie) {
+                  Match tied
+                } @else if (winnerName(match); as w) {
+                  {{ w }} {{ match.result.winMargin }}
+                } @else {
+                  {{ match.result.winMargin || 'Completed' }}
+                }
+              </span>
+            </div>
+          </a>
+        }
+      </div>
+    </section>
+  }
+</div>

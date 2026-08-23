@@ -1,0 +1,15 @@
+<div class="stat-card" [class]="'stat-card--' + accent()">
+  <div class="stat-card__icon">
+    <span class="material-icons">{{ icon() }}</span>
+  </div>
+  <div class="stat-card__body">
+    <span class="stat-card__value font-display">{{ value() }}</span>
+    <span class="stat-card__label">{{ label() }}</span>
+  </div>
+  @if (trend()) {
+    <span class="stat-card__trend" [class.stat-card__trend--negative]="!trendPositive()">
+      <span class="material-icons">{{ trendPositive() ? 'trending_up' : 'trending_down' }}</span>
+      {{ trend() }}
+    </span>
+  }
+</div>

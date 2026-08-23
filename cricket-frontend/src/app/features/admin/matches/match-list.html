@@ -1,0 +1,40 @@
+<div class="admin-page__header">
+  <h2 class="font-display">Matches</h2>
+  <a routerLink="/admin/matches/new" class="admin-page__create-btn">
+    <span class="material-icons">add</span> New match
+  </a>
+</div>
+
+@if (matches().length === 0) {
+  <div class="admin-empty">
+    <span class="material-icons">sports</span>
+    <p>No matches yet. Create your first match to get started.</p>
+  </div>
+} @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Match</th>
+          <th>Teams</th>
+          <th>Mode</th>
+          <th>Type</th>
+          <th>Overs</th>
+          <th>Status</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (match of matches(); track match._id) {
+          <tr [routerLink]="['/matches', match._id]" class="admin-table__row--clickable">
+            <td>{{ match.name }}</td>
+            <td>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</td>
+            <td>{{ match.mode }}</td>
+            <td>{{ match.matchType }}</td>
+            <td>{{ match.overs }}</td>
+            <td><span class="admin-table__badge" [class]="statusBadgeClass(match.status)">{{ match.status }}</span></td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

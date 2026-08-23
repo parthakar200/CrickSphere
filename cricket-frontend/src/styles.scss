@@ -1,0 +1,179 @@
+// =============================================================================
+// Global styles & design tokens — Cricket Scoring & Tournament Management
+// =============================================================================
+// Palette: Dark Navy base, Electric Blue (primary), Purple (tournament/premium
+// accent), Emerald (success/positive), Crimson (wickets/negative), Amber (warn).
+// See README.md "Design System" section for the full rationale.
+// =============================================================================
+
+@use '@angular/material' as mat;
+@use 'tailwindcss';
+
+html {
+  @include mat.theme((
+    color: (
+      primary: mat.$violet-palette,
+      tertiary: mat.$blue-palette,
+    ),
+    typography: (
+      plain-family: 'Inter, system-ui, sans-serif',
+      brand-family: 'Space Grotesk, Inter, system-ui, sans-serif',
+    ),
+    density: 0,
+  ));
+}
+
+// -----------------------------------------------------------------------------
+// Design tokens (CSS custom properties) — single source of truth for color,
+// consumed by both Tailwind utility usage (via arbitrary values) and our own
+// component SCSS. Light and dark are distinct palettes, not simple inverses.
+// -----------------------------------------------------------------------------
+:root {
+  // Dark theme (default)
+  --color-bg: #0B0F1A;
+  --color-surface: #131A2C;
+  --color-surface-raised: #1A2238;
+  --color-border: #232C45;
+
+  --color-text-primary: #F8FAFC;
+  --color-text-secondary: #94A3B8;
+  --color-text-tertiary: #475569;
+
+  --color-electric: #3B82F6;
+  --color-electric-soft: rgba(59, 130, 246, 0.15);
+  --color-purple: #8B5CF6;
+  --color-purple-soft: rgba(139, 92, 246, 0.15);
+  --color-emerald: #10B981;
+  --color-emerald-soft: rgba(16, 185, 129, 0.15);
+  --color-crimson: #EF4444;
+  --color-crimson-soft: rgba(239, 68, 68, 0.15);
+  --color-amber: #F59E0B;
+  --color-amber-soft: rgba(245, 158, 11, 0.15);
+
+  --glass-bg: rgba(19, 26, 44, 0.6);
+  --glass-border: rgba(255, 255, 255, 0.08);
+  --glass-blur: 16px;
+
+  --font-display: 'Space Grotesk', Inter, system-ui, sans-serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  --radius-card: 16px;
+  --radius-control: 10px;
+
+  --shadow-card: 0 8px 30px rgba(0, 0, 0, 0.35);
+}
+
+[data-theme='light'] {
+  --color-bg: #F7F8FB;
+  --color-surface: #FFFFFF;
+  --color-surface-raised: #FFFFFF;
+  --color-border: #E2E8F0;
+
+  --color-text-primary: #0F172A;
+  --color-text-secondary: #475569;
+  --color-text-tertiary: #94A3B8;
+
+  --glass-bg: rgba(255, 255, 255, 0.7);
+  --glass-border: rgba(15, 23, 42, 0.06);
+
+  --shadow-card: 0 4px 20px rgba(15, 23, 42, 0.08);
+
+  // Accent colors stay the same hue in both themes (brand consistency); only
+  // the surfaces/text shift. Soft variants get a touch more opaque on light.
+  --color-electric-soft: rgba(59, 130, 246, 0.1);
+  --color-purple-soft: rgba(139, 92, 246, 0.1);
+  --color-emerald-soft: rgba(16, 185, 129, 0.1);
+  --color-crimson-soft: rgba(239, 68, 68, 0.1);
+  --color-amber-soft: rgba(245, 158, 11, 0.1);
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  background-color: var(--color-bg);
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  -webkit-font-smoothing: antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+::selection {
+  background: var(--color-electric-soft);
+}
+
+// Scrollbar — kept subtle, on-brand, not a generic browser default
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-border);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-tertiary);
+}
+
+// -----------------------------------------------------------------------------
+// Reusable utility classes for the glassmorphism signature elements
+// (used sparingly — see README "Design System": only the live ticker and
+// hero/score cards use real glass; nav and tables stay flat for readability)
+// -----------------------------------------------------------------------------
+.glass-panel {
+  background: var(--glass-bg);
+  border: 1px solid var(--glass-border);
+  backdrop-filter: blur(var(--glass-blur));
+  -webkit-backdrop-filter: blur(var(--glass-blur));
+  border-radius: var(--radius-card);
+}
+
+.card-flat {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+}
+
+.font-display {
+  font-family: var(--font-display);
+}
+
+.font-mono {
+  font-family: var(--font-mono);
+}
+
+.text-live-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--color-crimson);
+  box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6);
+  animation: pulse-live 1.6s infinite;
+}
+
+@keyframes pulse-live {
+  0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.6); }
+  70% { box-shadow: 0 0 0 6px rgba(239, 68, 68, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+}
+
+// Respect reduced-motion preferences globally
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}

@@ -1,0 +1,50 @@
+<div class="player-browse">
+  <header class="player-browse__header">
+    <h1 class="font-display">Players</h1>
+    <p>Browse every player and their team. Click through for full career stats.</p>
+  </header>
+
+  <div class="player-browse__filters">
+    <div class="player-browse__search">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        placeholder="Search players..."
+        [value]="searchTerm()"
+        (input)="searchTerm.set($any($event.target).value)"
+      />
+    </div>
+    <select [value]="roleFilter()" (change)="roleFilter.set($any($event.target).value)">
+      <option value="">All roles</option>
+      <option value="batsman">Batsman</option>
+      <option value="bowler">Bowler</option>
+      <option value="all-rounder">All-rounder</option>
+      <option value="wicket-keeper">Wicket-keeper</option>
+    </select>
+  </div>
+
+  @if (players().length === 0) {
+    <div class="player-browse__empty">
+      <span class="material-icons">sports_cricket</span>
+      <p>No players found.</p>
+    </div>
+  } @else {
+    <div class="player-browse__grid">
+      @for (player of players(); track player._id) {
+        <a [routerLink]="['/players', player._id]" class="player-card card-flat">
+          @if(player.photo == null){
+            <div class="player-card__avatar">{{ player.name.charAt(0) }}</div>
+          }@else{
+            <div class="player-card__avatar">
+              <img src="{{player.photo}}" alt="">
+            </div>
+          }
+          
+          <strong>{{ player.name }}</strong>
+          <span class="player-card__role">{{ player.role }}</span>
+          <!-- <span class="player-card__team">{{ teamLabel(player) }}</span> -->
+        </a>
+      }
+    </div>
+  }
+</div>

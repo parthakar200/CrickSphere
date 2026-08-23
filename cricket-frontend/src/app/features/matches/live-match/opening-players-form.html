@@ -1,0 +1,70 @@
+<div class="opening-form card-flat">
+  <h2 class="font-display">Set the openers</h2>
+  <p>Pick the opening batsmen and the first bowler to start recording balls.</p>
+
+  @if (battingRoster().length === 0 || bowlingRoster().length === 0) {
+    <div class="opening-form__warning">
+      <span class="material-icons">warning</span>
+      <span>
+        @if (battingRoster().length === 0 && bowlingRoster().length === 0) {
+          Neither team has any players assigned yet.
+        } @else if (battingRoster().length === 0) {
+          The batting team has no players assigned yet.
+        } @else {
+          The bowling team has no players assigned yet.
+        }
+        Go to Admin Panel → Teams (or Players) and assign players to these teams before scoring can start.
+      </span>
+    </div>
+  }
+
+  <label class="opening-form__field">
+    <span>Striker</span>
+    <input type="text"
+            list="striker-options"
+            [value] = "strikerQuery()"
+            (input) ="onStrikerInput($any($event.target).value)"
+    >
+    <datalist id="striker-options">
+      @for(player of battingRoster(); track player._id){
+        @if (player._id !== nonStriker()) {
+          <option [value]="player.name">{{ player.name }}</option>
+        }
+      }
+    </datalist>
+  </label>
+
+  <label class="opening-form__field">
+    <span>Non-striker</span>
+    <input type="text"
+            list="non-striker-options"
+            [value] = "nonStrikerQuery()"
+            (input) ="onNonStrikerInput($any($event.target).value)"
+    >
+    <datalist id="non-striker-options">
+      @for(player of battingRoster(); track player._id){
+        @if (player._id !== striker()) {
+          <option [value]="player.name">{{ player.name }}</option>
+        }
+      }
+    </datalist>
+  </label>
+
+  <label class="opening-form__field">
+    <span>Opening bowler</span>
+    <input type="text"
+            list="bowler-option"
+            [value] = "bowlerQuery()"
+            (input) ="onBowlerInput($any($event.target).value)"
+    >
+    <datalist id="bowler-option">
+      @for(player of bowlingRoster(); track player._id){
+          <option [value]="player.name">{{ player.name }}</option>
+      }
+    </datalist>
+  </label>
+
+  <button type="button" class="opening-form__submit" [disabled]="!canConfirm()" (click)="confirm()">
+    Start the innings
+  </button>
+</div>

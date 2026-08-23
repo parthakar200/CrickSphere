@@ -1,0 +1,28 @@
+<div class="team-browse">
+  <header class="team-browse__header">
+    <h1 class="font-display">Teams</h1>
+    <p>Browse every team and their current roster.</p>
+  </header>
+
+  @if (teams().length === 0) {
+    <div class="team-browse__empty">
+      <span class="material-icons">groups</span>
+      <p>No teams yet.</p>
+    </div>
+  } @else {
+    <div class="team-browse__grid">
+      @for (team of teams(); track team._id) {
+        <a [routerLink]="['/teams', team._id]" class="team-card card-flat">
+          <div class="team-card__logo">{{ team.shortName.charAt(0) }}</div>
+          <div class="team-card__body">
+            <strong>{{ team.name }}</strong>
+            <span class="team-card__meta">{{ team.shortName }}</span>
+            @if (team.homeGround) {
+              <span class="team-card__ground">{{ team.homeGround }}</span>
+            }
+          </div>
+        </a>
+      }
+    </div>
+  }
+</div>

@@ -1,0 +1,89 @@
+@if (player(); as p) {
+  <div class="player-profile">
+    <header class="player-profile__header card-flat">
+      @if(p.photo == null){
+        <div class="player-profile__avatar">{{ p.name.charAt(0) }}</div>
+      }@else{
+        <div class="player-profile__avatar">
+              <img src="{{p.photo}}" alt="">
+            </div>
+      }
+      
+      <div class="player-profile__info">
+        <h1 class="font-display">{{ p.name }}</h1>
+        <div class="player-profile__meta">
+          <span class="player-profile__badge">{{ p.role }}</span>
+          <!-- @if (teamId()) {
+            <a [routerLink]="['/teams', teamId()]" class="player-profile__team-link">{{ teamLabel() }}</a>
+          } @else {
+            <span>{{ teamLabel() }}</span>
+          } -->
+          @if (p.jerseyNumber) { <span class="font-mono">#{{ p.jerseyNumber }}</span> }
+        </div>
+        <div class="player-profile__styles">
+          <span>{{ p.battingStyle }}</span>
+          @if (p.bowlingStyle !== 'none') { <span>{{ p.bowlingStyle }}</span> }
+        </div>
+      </div>
+    </header>
+
+    @if (careerStats(); as stats) {
+      <div class="player-profile__career-note">
+        <span class="material-icons">info</span>
+        Career totals combine {{ stats.singleMatchesPlayed }} single match{{ stats.singleMatchesPlayed === 1 ? '' : 'es' }}
+        and {{ stats.tournamentMatchesPlayed }} tournament match{{ stats.tournamentMatchesPlayed === 1 ? '' : 'es' }}
+        ({{ stats.matchesPlayed }} total).
+      </div>
+
+      <section class="stat-section">
+        <h2 class="font-display">Batting</h2>
+        <div class="stat-section__grid">
+          <div class="stat-pill"><span>{{ stats.batting.runs }}</span><small>Runs</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.innings }}</span><small>Innings</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.highestScore }}{{ stats.batting.highestScoreIsNotOut ? '*' : '' }}</span><small>Highest Score</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.average | number: '1.2-2' }}</span><small>Average</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.strikeRate | number: '1.2-2' }}</span><small>Strike Rate</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.fifties }}</span><small>50s</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.hundreds }}</span><small>100s</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.fours }}</span><small>Fours</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.sixes }}</span><small>Sixes</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.notOuts }}</span><small>Not Outs</small></div>
+          <div class="stat-pill"><span>{{ stats.batting.ducks }}</span><small>Ducks</small></div>
+        </div>
+      </section>
+
+      @if (hasBowled()) {
+        <section class="stat-section">
+          <h2 class="font-display">Bowling</h2>
+          <div class="stat-section__grid">
+            <div class="stat-pill"><span>{{ stats.bowling.wickets }}</span><small>Wickets</small></div>
+            <div class="stat-pill"><span>{{ (stats.bowling.ballsBowled / 6) | number: '1.1-1' }}</span><small>Overs</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.runsConceded }}</span><small>Runs Conceded</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.average != null ? (stats.bowling.average | number: '1.2-2') : '—' }}</span><small>Average</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.economy | number: '1.2-2' }}</span><small>Economy</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.maidens }}</span><small>Maidens</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.dotBalls }}</span><small>Dot Balls</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.threeWicketHauls }}</span><small>3W Hauls</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.fiveWicketHauls }}</span><small>5W Hauls</small></div>
+            <div class="stat-pill"><span>{{ stats.bowling.bestFigures.wickets }}/{{ stats.bowling.bestFigures.runs }}</span><small>Best Figures</small></div>
+          </div>
+        </section>
+      }
+
+      @if (hasFielded()) {
+        <section class="stat-section">
+          <h2 class="font-display">Fielding</h2>
+          <div class="stat-section__grid">
+            <div class="stat-pill"><span>{{ stats.fielding.catches }}</span><small>Catches</small></div>
+            <div class="stat-pill"><span>{{ stats.fielding.runOuts }}</span><small>Run Outs</small></div>
+            <div class="stat-pill"><span>{{ stats.fielding.stumpings }}</span><small>Stumpings</small></div>
+          </div>
+        </section>
+      }
+    } @else {
+      <p class="player-profile__no-stats">This player hasn't featured in any scored matches yet.</p>
+    }
+  </div>
+} @else {
+  <p>Loading player...</p>
+}

@@ -1,0 +1,77 @@
+<div class="statistics">
+  <header class="statistics__header">
+    <h1 class="font-display">Statistics Center</h1>
+    <p>Deep analytics across batting, bowling, and team performance.</p>
+  </header>
+
+  <div class="statistics__filters">
+    <label class="statistics__filter-field">
+      <span>Tournament</span>
+      <select [value]="selectedTournament()" (change)="selectedTournament.set($any($event.target).value)">
+        <option value="">All-time (career)</option>
+        @for (tournament of tournaments()?.data ?? []; track tournament._id) {
+          <option [value]="tournament._id">{{ tournament.name }}</option>
+        }
+      </select>
+    </label>
+  </div>
+
+  <nav class="statistics__tabs">
+    <button type="button" class="statistics__tab" [class.statistics__tab--active]="activeSection() === 'batting'" (click)="activeSection.set('batting')">
+      Batting Analytics
+    </button>
+    <button type="button" class="statistics__tab" [class.statistics__tab--active]="activeSection() === 'bowling'" (click)="activeSection.set('bowling')">
+      Bowling Analytics
+    </button>
+    <button type="button" class="statistics__tab" [class.statistics__tab--active]="activeSection() === 'team'" (click)="activeSection.set('team')">
+      Team Analytics
+    </button>
+  </nav>
+
+  @switch (activeSection()) {
+    @case ('batting') {
+      <div class="statistics__grid">
+        <div class="card-flat statistics__chart-card">
+          <h3 class="font-display">Top run scorers</h3>
+          <app-chart type="bar" [data]="topRunScorersChart()" [height]="260" />
+        </div>
+        <div class="card-flat statistics__chart-card">
+          <h3 class="font-display">Strike rate analysis</h3>
+          <app-chart type="bar" [data]="strikeRateChart()" [height]="260" />
+        </div>
+        <div class="card-flat statistics__chart-card statistics__chart-card--wide">
+          <h3 class="font-display">Run distribution</h3>
+          <app-chart type="doughnut" [data]="runDistributionChart()" [height]="280" />
+        </div>
+      </div>
+    }
+    @case ('bowling') {
+      <div class="statistics__grid">
+        <div class="card-flat statistics__chart-card">
+          <h3 class="font-display">Top wicket takers</h3>
+          <app-chart type="bar" [data]="topWicketTakersChart()" [height]="260" />
+        </div>
+        <div class="card-flat statistics__chart-card">
+          <h3 class="font-display">Economy analysis</h3>
+          <app-chart type="bar" [data]="economyChart()" [height]="260" />
+        </div>
+        <div class="card-flat statistics__chart-card statistics__chart-card--wide">
+          <h3 class="font-display">Dot ball analysis</h3>
+          <app-chart type="bar" [data]="dotBallChart()" [height]="260" />
+        </div>
+      </div>
+    }
+    @case ('team') {
+      <div class="statistics__grid">
+        <div class="card-flat statistics__chart-card statistics__chart-card--wide">
+          <h3 class="font-display">Team comparison</h3>
+          <app-chart type="bar" [data]="teamComparisonChart()" [height]="300" />
+        </div>
+        <div class="card-flat statistics__chart-card statistics__chart-card--wide">
+          <h3 class="font-display">Win percentage</h3>
+          <app-chart type="bar" [data]="winPercentageChart()" [height]="280" />
+        </div>
+      </div>
+    }
+  }
+</div>

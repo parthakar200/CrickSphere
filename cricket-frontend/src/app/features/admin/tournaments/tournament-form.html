@@ -1,0 +1,121 @@
+<div class="admin-page__header">
+  <h2 class="font-display">{{ isEditMode() ? 'Edit tournament' : 'New tournament' }}</h2>
+</div>
+
+@if (loadingExisting()) {
+  <p>Loading tournament details...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+    <label class="admin-form__field">
+      <span>Tournament name</span>
+      <input type="text" formControlName="name" placeholder="Demo Premier League 2026" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <small class="admin-form__error">Tournament name is required</small>
+      }
+    </label>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Start date</span>
+        <input type="date" formControlName="startDate" />
+        @if (form.controls.startDate.invalid && form.controls.startDate.touched) {
+          <small class="admin-form__error">Start date is required</small>
+        }
+      </label>
+
+      <label class="admin-form__field">
+        <span>End date</span>
+        <input type="date" formControlName="endDate" />
+        @if (form.controls.endDate.invalid && form.controls.endDate.touched) {
+          <small class="admin-form__error">End date is required</small>
+        }
+      </label>
+    </div>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Format</span>
+        <select formControlName="format">
+          @for (format of formats; track format) {
+            <option [value]="format">{{ format }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-form__field">
+        <span>Match type</span>
+        <select formControlName="matchType">
+          @for (type of matchTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Overs per match</span>
+        <input type="number" formControlName="oversPerMatch" min="1" />
+      </label>
+
+      <label class="admin-form__field">
+        <span>Venue (optional)</span>
+        <input type="text" formControlName="venue" placeholder="Various venues" />
+      </label>
+    </div>
+
+    <label class="admin-form__field">
+      <span>Organizer (optional)</span>
+      <input type="text" formControlName="organizer" placeholder="Organizer name" />
+    </label>
+
+    <div class="admin-form__actions">
+      <button type="submit" class="admin-form__submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="admin-form__spinner"></span>
+        }
+        {{ isEditMode() ? 'Save changes' : 'Create tournament' }}
+      </button>
+      <a routerLink="/admin/tournaments" class="admin-form__cancel">Cancel</a>
+    </div>
+  </form>
+
+  @if (isEditMode()) {
+    <div class="tournament-teams">
+      <h3 class="font-display">Teams in this tournament</h3>
+
+      @if (currentTeams().length === 0) {
+        <p class="tournament-teams__empty">No teams added yet.</p>
+      } @else {
+        <ul class="tournament-teams__list">
+          @for (team of currentTeams(); track team._id) {
+            <li>{{ team.name }} ({{ team.shortName }})</li>
+          }
+        </ul>
+      }
+
+      <h4 class="font-display">Add teams</h4>
+      <div class="tournament-teams__picker">
+        @for (team of allTeams(); track team._id) {
+          @if (!isTeamAlreadyAdded(team._id)) {
+            <label class="tournament-teams__checkbox">
+              <input
+                type="checkbox"
+                [checked]="selectedTeamIds().has(team._id)"
+                (change)="toggleTeamSelection(team._id)"
+              />
+              {{ team.name }} ({{ team.shortName }})
+            </label>
+          }
+        }
+      </div>
+
+      <button type="button" class="admin-form__submit" [disabled]="addingTeams() || selectedTeamIds().size === 0" (click)="addSelectedTeams()">
+        @if (addingTeams()) {
+          <span class="admin-form__spinner"></span>
+        }
+        Add selected teams
+      </button>
+    </div>
+  }
+}

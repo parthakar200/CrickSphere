@@ -1,0 +1,51 @@
+<div class="admin-page__header">
+  <h2 class="font-display">Players</h2>
+  <a routerLink="/admin/players/new" class="admin-page__create-btn">
+    <span class="material-icons">add</span> New player
+  </a>
+</div>
+
+@if (players().length === 0) {
+  <div class="admin-empty">
+    <span class="material-icons">sports_cricket</span>
+    <p>No players yet. Create your first player to get started.</p>
+  </div>
+} @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Batting style</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (player of players(); track player._id) {
+          <tr>
+            <td>{{ player.name }}</td>
+            <td><span class="admin-table__badge" [class]="roleBadgeClass(player.role)">{{ player.role }}</span></td>
+            <td>{{ player.battingStyle }}</td>
+            <td>
+              <span class="admin-table__badge" [class.admin-table__badge--crimson]="!player.isActive">
+                {{ player.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="admin-table__actions">
+                <a [routerLink]="['/admin/players', player._id, 'edit']" class="admin-table__icon-btn" title="Edit">
+                  <span class="material-icons">edit</span>
+                </a>
+                <button type="button" class="admin-table__icon-btn admin-table__icon-btn--danger" title="Delete" (click)="deletePlayer(player)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

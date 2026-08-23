@@ -1,0 +1,22 @@
+<div class="next-batsman-form card-flat">
+  <h2 class="font-display">Wicket! — pick the next batsman</h2>
+  <p>The dismissed batsman can't come back in this innings.</p>
+
+  <label class="next-batsman-form__field">
+    <span>Batsman</span>
+    <input type="text"
+           list="new-batsman"
+           [value]="selectedBatsman()"
+           (input)="selectedBatsman.set($any($event.target).value)"
+    >
+    <datalist id="new-batsman">
+      @for (player of eligibleRoster(); track player._id) {
+        <option [value]="player.name">{{ player.name }}</option>
+      }
+    </datalist>
+  </label>
+
+  <button type="button" class="next-batsman-form__submit" [disabled]="!selectedBatsman()" (click)="confirm()">
+    Confirm Batsman
+  </button>
+</div>

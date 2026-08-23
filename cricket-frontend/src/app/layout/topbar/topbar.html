@@ -1,0 +1,62 @@
+<header class="topbar">
+  <div class="topbar__row">
+    <div class="topbar__search">
+      <span class="material-icons">search</span>
+      <input
+        type="text"
+        placeholder="Search players, teams, tournaments, matches..."
+        [value]="searchQuery()"
+        (input)="searchQuery.set($any($event.target).value)"
+        (keyup.enter)="onSearchSubmit()"
+      />
+    </div>
+
+    <div class="topbar__actions">
+      <button type="button" class="topbar__icon-btn" (click)="toggleTheme()" aria-label="Toggle theme">
+        <span class="material-icons">{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
+      </button>
+
+      <button type="button" class="topbar__icon-btn" aria-label="Notifications">
+        <span class="material-icons">notifications</span>
+      </button>
+
+      <div class="topbar__user">
+        <button type="button" class="topbar__user-btn" (click)="toggleUserMenu()">
+          <span class="topbar__avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
+          <span class="topbar__user-name">{{ currentUser()?.name }}</span>
+          <span class="material-icons topbar__chevron">expand_more</span>
+        </button>
+
+        @if (userMenuOpen()) {
+          <div class="topbar__user-menu">
+            <div class="topbar__user-menu-role">{{ currentUser()?.role }}</div>
+            <a routerLink="/profile" class="topbar__user-menu-item">
+              <span class="material-icons">person</span> Profile
+            </a>
+            <button type="button" class="topbar__user-menu-item" (click)="logout()">
+              <span class="material-icons">logout</span> Log out
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+
+  @if (liveMatches().length > 0) {
+    <div class="ticker glass-panel">
+      <div class="ticker__label">
+        <span class="text-live-dot"></span>
+        <span>LIVE</span>
+      </div>
+      <div class="ticker__scroll">
+        @for (match of liveMatches(); track match._id) {
+          <a class="ticker__chip" [routerLink]="['/matches', match._id, 'live']">
+            <span class="ticker__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
+            <span class="ticker__sep">•</span>
+            <span class="ticker__status font-mono">{{ match.status }}</span>
+          </a>
+        }
+      </div>
+    </div>
+  }
+</header>

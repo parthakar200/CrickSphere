@@ -1,0 +1,73 @@
+@if (tournament(); as t) {
+  <div class="tournament-detail">
+    <header class="tournament-detail__header card-flat">
+      <div class="tournament-detail__icon">
+        <span class="material-icons">emoji_events</span>
+      </div>
+      <div>
+        <h1 class="font-display">{{ t.name }}</h1>
+        <p class="tournament-detail__meta">{{ t.format }} · {{ t.matchType }} · {{ t.oversPerMatch }} overs</p>
+      </div>
+    </header>
+
+    @if (overview(); as ov) {
+      <section class="tournament-detail__stats">
+        <div class="stat-pill"><span>{{ ov.totalTeams }}</span><small>Teams</small></div>
+        <div class="stat-pill"><span>{{ ov.totalPlayers }}</span><small>Players</small></div>
+        <div class="stat-pill"><span>{{ ov.totalMatches }}</span><small>Matches</small></div>
+        <div class="stat-pill"><span>{{ ov.totalRuns }}</span><small>Runs</small></div>
+        <div class="stat-pill"><span>{{ ov.totalWickets }}</span><small>Wickets</small></div>
+        <div class="stat-pill"><span>{{ ov.totalSixes }}</span><small>Sixes</small></div>
+      </section>
+    }
+
+    <section>
+      <h2 class="font-display">Points Table</h2>
+      @if (pointsTable().length === 0) {
+        <p class="tournament-detail__empty">No teams added to this tournament's points table yet.</p>
+      } @else {
+        <div class="tournament-detail__table-wrap">
+          <table class="tournament-detail__table">
+            <thead>
+              <tr>
+                <th>#</th><th>Team</th><th>P</th><th>W</th><th>L</th><th>T</th><th>NRR</th><th>Pts</th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (row of pointsTable(); track row._id) {
+                <tr>
+                  <td>{{ row.position }}</td>
+                  <td>{{ teamLabel(row.team) }}</td>
+                  <td>{{ row.played }}</td>
+                  <td>{{ row.won }}</td>
+                  <td>{{ row.lost }}</td>
+                  <td>{{ row.tied }}</td>
+                  <td [class]="nrrClass(row.netRunRate)">{{ row.netRunRate > 0 ? '+' : '' }}{{ row.netRunRate }}</td>
+                  <td class="tournament-detail__points">{{ row.points }}</td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+
+    <section>
+      <h2 class="font-display">Matches</h2>
+      @if (matches().length === 0) {
+        <p class="tournament-detail__empty">No matches scheduled yet.</p>
+      } @else {
+        <div class="tournament-detail__matches">
+          @for (match of matches(); track match._id) {
+            <a [routerLink]="['/matches', match._id, 'live']" class="match-row card-flat">
+              <span class="match-row__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
+              <span class="match-row__status">{{ match.status }}</span>
+            </a>
+          }
+        </div>
+      }
+    </section>
+  </div>
+} @else {
+  <p>Loading tournament...</p>
+}

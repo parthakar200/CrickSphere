@@ -1,0 +1,62 @@
+<div class="auth-page">
+  <div class="auth-page__hero">
+    <div class="auth-page__hero-content">
+      <span class="material-icons auth-page__hero-icon">emoji_events</span>
+      <h1 class="font-display">Join CrickSphere</h1>
+      <p>Create an account to follow live scores, dive into leaderboards, and track every tournament.</p>
+    </div>
+  </div>
+
+  <div class="auth-page__form-side">
+    <div class="auth-card card-flat">
+      <h2 class="font-display">Create your account</h2>
+      <p class="auth-card__subtitle">New accounts start as viewers — an admin can upgrade your role later.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+        <label class="auth-form__field">
+          <span>Full name</span>
+          <input type="text" formControlName="name" placeholder="Jane Doe" autocomplete="name" />
+          @if (form.controls.name.invalid && form.controls.name.touched) {
+            <small class="auth-form__error">Name is required</small>
+          }
+        </label>
+
+        <label class="auth-form__field">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email" />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <small class="auth-form__error">Enter a valid email address</small>
+          }
+        </label>
+
+        <label class="auth-form__field">
+          <span>Password</span>
+          <input type="password" formControlName="password" placeholder="At least 8 characters" autocomplete="new-password" />
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <small class="auth-form__error">Password must be at least 8 characters</small>
+          }
+        </label>
+
+        <label class="auth-form__field">
+          <span>Confirm password</span>
+          <input type="password" formControlName="confirmPassword" placeholder="Re-enter your password" autocomplete="new-password" />
+          @if (form.errors?.['passwordMismatch'] && form.controls.confirmPassword.touched) {
+            <small class="auth-form__error">Passwords do not match</small>
+          }
+        </label>
+
+        <button type="submit" class="auth-form__submit" [disabled]="loading()">
+          @if (loading()) {
+            <span class="auth-form__spinner"></span>
+          } @else {
+            Create account
+          }
+        </button>
+      </form>
+
+      <p class="auth-card__footer">
+        Already have an account? <a routerLink="/auth/login">Sign in</a>
+      </p>
+    </div>
+  </div>
+</div>

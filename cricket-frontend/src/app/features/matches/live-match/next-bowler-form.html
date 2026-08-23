@@ -1,0 +1,22 @@
+<div class="next-bowler-form card-flat">
+  <h2 class="font-display">Over {{ overNumber() }} — pick the bowler</h2>
+  <p>The previous bowler can't bowl this over.</p>
+
+  <label class="next-bowler-form__field">
+    <span>Bowler</span>
+    <input type="text"
+           list="new-bowler"
+           [value]="selectedBowler()"
+           (input)="selectedBowler.set($any($event.target).value)"
+    >
+    <datalist id="new-bowler">
+      @for (player of eligibleRoster(); track player._id) {
+        <option [value]="player.name">{{ player.name }}</option>
+      }
+    </datalist>
+  </label>
+
+  <button type="button" class="next-bowler-form__submit" [disabled]="!selectedBowler()" (click)="confirm()">
+    Confirm bowler
+  </button>
+</div>

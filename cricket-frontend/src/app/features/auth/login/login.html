@@ -1,0 +1,71 @@
+<div class="auth-page">
+  <div class="auth-page__hero">
+    <div class="auth-page__hero-content">
+      <span class="material-icons auth-page__hero-icon">sports_cricket</span>
+      <h1 class="font-display">CrickSphere</h1>
+      <p>Score every ball. Track every record. Run the whole tournament from one place.</p>
+
+      <div class="auth-page__stat-row">
+        <div class="auth-page__stat">
+          <span class="font-display">187/4</span>
+          <small class="font-mono">18.2 OV</small>
+        </div>
+        <div class="auth-page__stat">
+          <span class="font-display">9.84</span>
+          <small>CRR</small>
+        </div>
+        <div class="auth-page__stat auth-page__stat--positive">
+          <span class="font-display">+1.42</span>
+          <small>NRR</small>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="auth-page__form-side">
+    <div class="auth-card card-flat">
+      <h2 class="font-display">Sign in</h2>
+      <p class="auth-card__subtitle">Welcome back — let's get you to the scorecard.</p>
+
+      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
+        <label class="auth-form__field">
+          <span>Email</span>
+          <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email" />
+          @if (form.controls.email.invalid && form.controls.email.touched) {
+            <small class="auth-form__error">Enter a valid email address</small>
+          }
+        </label>
+
+        <label class="auth-form__field">
+          <span>Password</span>
+          <div class="auth-form__password-wrap">
+            <input
+              [type]="showPassword() ? 'text' : 'password'"
+              formControlName="password"
+              placeholder="••••••••"
+              autocomplete="current-password"
+            />
+            <button type="button" class="auth-form__toggle-visibility" (click)="showPassword.set(!showPassword())">
+              <span class="material-icons">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+            </button>
+          </div>
+          @if (form.controls.password.invalid && form.controls.password.touched) {
+            <small class="auth-form__error">Password is required</small>
+          }
+        </label>
+
+        <button type="submit" class="auth-form__submit" [disabled]="loading()">
+          @if (loading()) {
+            <span class="auth-form__spinner"></span>
+          } @else {
+            Sign in
+          }
+        </button>
+      </form>
+
+      <p class="auth-card__footer">
+        Don't have an account? <a routerLink="/auth/register">Create one</a>
+      </p>
+    </div>
+  </div>
+</div>

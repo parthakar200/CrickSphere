@@ -1,0 +1,63 @@
+<div class="admin-page__header">
+  <h2 class="font-display">{{ isEditMode() ? 'Edit player' : 'New player' }}</h2>
+</div>
+
+@if (loadingExisting()) {
+  <p>Loading player details...</p>
+} @else {
+  <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+    <label class="admin-form__field">
+      <span>Player name</span>
+      <input type="text" formControlName="name" placeholder="Virat Kohli" />
+      @if (form.controls.name.invalid && form.controls.name.touched) {
+        <small class="admin-form__error">Player name is required</small>
+      }
+    </label>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Role</span>
+        <select formControlName="role">
+          @for (role of roles; track role) {
+            <option [value]="role">{{ role }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-form__field">
+        <span>Jersey number (optional)</span>
+        <input type="number" formControlName="jerseyNumber" placeholder="18" min="0" max="999" />
+      </label>
+    </div>
+
+    <div class="admin-form__row">
+      <label class="admin-form__field">
+        <span>Batting style</span>
+        <select formControlName="battingStyle">
+          @for (style of battingStyles; track style) {
+            <option [value]="style">{{ style }}</option>
+          }
+        </select>
+      </label>
+
+      <label class="admin-form__field">
+        <span>Bowling style</span>
+        <select formControlName="bowlingStyle">
+          @for (style of bowlingStyles; track style) {
+            <option [value]="style">{{ style }}</option>
+          }
+        </select>
+      </label>
+    </div>
+
+    <div class="admin-form__actions">
+      <button type="submit" class="admin-form__submit" [disabled]="loading()">
+        @if (loading()) {
+          <span class="admin-form__spinner"></span>
+        }
+        {{ isEditMode() ? 'Save changes' : 'Create player' }}
+      </button>
+      <a routerLink="/admin/players" class="admin-form__cancel">Cancel</a>
+    </div>
+  </form>
+}

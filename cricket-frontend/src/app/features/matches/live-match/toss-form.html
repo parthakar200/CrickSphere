@@ -1,0 +1,50 @@
+<div class="toss-form card-flat">
+  <h2 class="font-display">Toss</h2>
+  <p>Select the toss winner and their decision to start the match.</p>
+
+  <div class="toss-form__teams">
+    <button
+      type="button"
+      class="toss-form__team-btn"
+      [class.toss-form__team-btn--selected]="selectedWinner === teamA()._id"
+      (click)="selectedWinner = teamA()._id"
+    >
+      {{ teamA().name }}
+    </button>
+    <span class="toss-form__vs">vs</span>
+    <button
+      type="button"
+      class="toss-form__team-btn"
+      [class.toss-form__team-btn--selected]="selectedWinner === teamB()._id"
+      (click)="selectedWinner = teamB()._id"
+    >
+      {{ teamB().name }}
+    </button>
+  </div>
+
+  <div class="toss-form__decision">
+    <button
+      type="button"
+      class="toss-form__decision-btn"
+      [class.toss-form__decision-btn--selected]="selectedDecision === 'bat'"
+      (click)="selectedDecision = 'bat'"
+    >
+      Elected to bat
+    </button>
+    <button
+      type="button"
+      class="toss-form__decision-btn"
+      [class.toss-form__decision-btn--selected]="selectedDecision === 'bowl'"
+      (click)="selectedDecision = 'bowl'"
+    >
+      Elected to bowl
+    </button>
+  </div>
+
+  <button type="button" class="toss-form__submit" [disabled]="!selectedWinner || submitting()" (click)="submit()">
+    @if (submitting()) {
+      <span class="toss-form__spinner"></span>
+    }
+    Confirm toss & start match
+  </button>
+</div>

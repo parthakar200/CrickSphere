@@ -1,0 +1,288 @@
+<div class="leaderboards">
+  <header class="leaderboards__header">
+    <h1 class="font-display">Leaderboards</h1>
+    <p>Career stats combine single matches and tournament matches. Filter to one tournament to scope it.</p>
+  </header>
+
+  <div class="leaderboards__filters">
+    <label class="leaderboards__filter-field">
+      <span>Tournament</span>
+      <select [value]="selectedTournament()" (change)="selectedTournament.set($any($event.target).value)">
+        <option value="">All-time (career)</option>
+        @for (tournament of tournaments()?.data ?? []; track tournament._id) {
+        <option [value]="tournament._id">{{ tournament.name }}</option>
+        }
+      </select>
+    </label>
+
+    @if (activeTab() === 'best-strike-rate') {
+    <label class="leaderboards__filter-field">
+      <span>Min balls faced</span>
+      <input type="number" [value]="minBalls()" (input)="minBalls.set(+$any($event.target).value)" min="1" />
+    </label>
+    }
+    @if (activeTab() === 'best-economy') {
+    <label class="leaderboards__filter-field">
+      <span>Min overs bowled</span>
+      <input type="number" [value]="minOvers()" (input)="minOvers.set(+$any($event.target).value)" min="1" />
+    </label>
+    }
+    @if (activeTab() === 'most-dot-balls') {
+    <label class="leaderboards__filter-field">
+      <span>Min overs bowled</span>
+      <input type="number" [value]="minOvers()" (input)="minOvers.set(+$any($event.target).value)" min="0" />
+    </label>
+    }
+    @if (activeTab() === 'best-bowling-average') {
+    <label class="leaderboards__filter-field">
+      <span>Min wickets</span>
+      <input type="number" [value]="minWickets()" (input)="minWickets.set(+$any($event.target).value)" min="1" />
+    </label>
+    }
+    @if (activeTab() === 'fielding') {
+    <label class="leaderboards__filter-field">
+      <span>Dismissal type</span>
+      <select [value]="fieldingType()" (change)="fieldingType.set($any($event.target).value)">
+        <option value="all">All dismissals</option>
+        <option value="catches">Catches</option>
+        <option value="runOuts">Run outs</option>
+        <option value="stumpings">Stumpings</option>
+      </select>
+    </label>
+    }
+  </div>
+
+  <nav class="leaderboards__tabs">
+    @for (tab of tabs; track tab) {
+    <button type="button" class="leaderboards__tab" [class.leaderboards__tab--active]="activeTab() === tab"
+      (click)="activeTab.set(tab)">
+      {{ tabLabel(tab) }}
+    </button>
+    }
+  </nav>
+
+  <div class="leaderboards__table-wrap">
+    @switch (activeTab()) {
+    @case ('most-runs') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Mat</th>
+          <th>Inn</th>
+          <th>Runs</th>
+          <th>HS</th>
+          <th>Avg</th>
+          <th>SR</th>
+          <th>50s</th>
+          <th>100s</th>
+          <th>4s</th>
+          <th>6s</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of battingRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td>{{ row.matches }}</td>
+          <td>{{ row.innings }}</td>
+          <td class="leaderboards__highlight">{{ row.runs }}</td>
+          <td>{{ row.highestScore }}</td>
+          <td>{{ row.average | number: '1.2-2' }}</td>
+          <td>{{ row.strikeRate | number: '1.2-2' }}</td>
+          <td>{{ row.fifties }}</td>
+          <td>{{ row.hundreds }}</td>
+          <td>{{ row.fours }}</td>
+          <td>{{ row.sixes }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('best-strike-rate') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>
+          <th>Runs</th>
+          <th>Balls</th>
+          <th>Strike Rate</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of strikeRateRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          <td>{{ row.runs }}</td>
+          <td>{{ row.ballsFaced }}</td>
+          <td class="leaderboards__highlight">{{ row.strikeRate | number: '1.2-2' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('most-sixes') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Sixes</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of simpleCountRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td class="leaderboards__highlight">{{ row.count }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('most-fours') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Fours</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of simpleCountRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td class="leaderboards__highlight">{{ row.count }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('most-wickets') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Mat</th>
+          <th>Overs</th>
+          <th>Wickets</th>
+          <th>Avg</th>
+          <th>Economy</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of bowlingRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td>{{ row.matches }}</td>
+          <td>{{ row.overs }}</td>
+          <td class="leaderboards__highlight">{{ row.wickets }}</td>
+          <td>{{ row.average != null ? (row.average | number: '1.2-2') : '—' }}</td>
+          <td>{{ row.economy | number: '1.2-2' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('best-economy') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Overs</th>
+          <th>Runs conceded</th>
+          <th>Economy</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of economyRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td>{{ row.overs }}</td>
+          <td>{{ row.runsConceded }}</td>
+          <td class="leaderboards__highlight">{{ row.economy | number: '1.2-2' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('most-dot-balls') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Dot Balls</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of simpleCountRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td class="leaderboards__highlight">{{ row.count }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('best-bowling-average') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Bowling Average</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of bowlingRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td class="leaderboards__highlight">{{ row.average != null ? (row.average | number: '1.2-2') : '—' }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    @case ('fielding') {
+    <table class="leaderboards__table">
+      <thead>
+        <tr>
+          <th>Rank</th>
+          <th>Player</th>@if (isTournamentScoped()) {<th>Team</th>}<th>Catches</th>
+          <th>Run Outs</th>
+          <th>Stumpings</th>
+          <th>Total</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (row of fieldingRows(); track row.player._id) {
+        <tr>
+          <td>{{ row.rank }}</td>
+          <td>{{ playerName(row.player) }}</td>
+          @if (isTournamentScoped()) {<td>{{ teamLabel(row.player) }}</td>}
+          <td>{{ row.catches }}</td>
+          <td>{{ row.runOuts }}</td>
+          <td>{{ row.stumpings }}</td>
+          <td class="leaderboards__highlight">{{ row.total }}</td>
+        </tr>
+        }
+      </tbody>
+    </table>
+    }
+    }
+  </div>
+</div>

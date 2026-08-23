@@ -1,0 +1,50 @@
+<div class="shell">
+  <app-sidebar />
+
+  <div class="shell__main">
+    <app-topbar />
+
+    <main class="shell__content">
+      <router-outlet />
+    </main>
+
+    <nav class="shell__mobile-nav">
+      @for (item of mobilePrimaryItems(); track item.route) {
+        <a [routerLink]="item.route" routerLinkActive="shell__mobile-link--active" class="shell__mobile-link">
+          <span class="material-icons">{{ item.icon }}</span>
+          <span>{{ item.label === 'Live Matches' ? 'Live' : item.label === 'Tournaments' ? 'Tours' : item.label === 'Leaderboards' ? 'Ranks' : item.label === 'Dashboard' ? 'Home' : item.label }}</span>
+        </a>
+      }
+      @if (mobileMoreItems().length > 0) {
+        <button
+          type="button"
+          class="shell__mobile-link"
+          [class.shell__mobile-link--active]="moreOpen()"
+          (click)="toggleMore()"
+        >
+          <span class="material-icons">more_horiz</span>
+          <span>More</span>
+        </button>
+      }
+    </nav>
+
+    @if (moreOpen()) {
+      <div class="shell__more-backdrop" (click)="closeMore()"></div>
+      <div class="shell__more-sheet">
+        @for (item of mobileMoreItems(); track item.route) {
+          
+          <a  [routerLink]="item.route"
+            routerLinkActive="shell__more-link--active"
+            class="shell__more-link"
+            (click)="closeMore()"
+          >
+            <span class="material-icons">{{ item.icon }}</span>
+            <span>{{ item.label }}</span>
+          </a>
+        }
+      </div>
+    }
+  </div>
+</div>
+
+<app-toast-container />

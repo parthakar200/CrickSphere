@@ -1,0 +1,126 @@
+@if (match(); as m) {
+  <div class="live-match">
+    @if (resultText()) {
+      <div class="confetti-overlay" aria-hidden="true">
+        @for (piece of confettiPieces(); track piece.id) {
+          <span
+            class="confetti-piece"
+            [style.left.%]="piece.left"
+            [style.animation-delay.s]="piece.delay"
+            [style.animation-duration.s]="piece.duration"
+            [style.background]="piece.color"
+            [style.transform]="'rotate(' + piece.rotate + 'deg)'"
+          ></span>
+        }
+      </div>
+    }
+    <header class="live-match__header">
+      <h1 class="font-display">{{ m.name }}</h1>
+      <span class="live-match__status">{{ m.status }}</span>
+    </header>
+
+    @if (needsPlayingXI()) {
+      @if (canScore()) {
+        <app-playing-xi-form
+          [matchId]="m._id"
+          [teamAName]="teamA()?.name ?? 'Team A'"
+          [teamBName]="teamB()?.name ?? 'Team B'"
+          [submitting]="playingXISubmitting()"
+          (confirmed)="confirmPlayingXI($event)"
+        />
+      } @else {
+        <p class="live-match__waiting">Waiting for the Playing XI to be set.</p>
+      }
+    } @else if (m.status === 'scheduled' || m.status === 'toss') {
+      @if (canScore() && teamA() && teamB()) {
+        <app-toss-form [teamA]="teamA()!" [teamB]="teamB()!" [submitting]="tossSubmitting()" (tossSubmit)="submitToss($event)" />
+      } @else {
+        <p class="live-match__waiting">Waiting for the toss.</p>
+      }
+    }@else {
+      <div class="live-match__layout">
+         <a [routerLink]="['/matches', m._id]" class="live-match__scorecard-link" title="View full match detail">
+        <app-scorecard-display
+          [match]="m"
+          [innings]="innings()"
+          [runRate]="data()?.runRate ?? 0"
+          [requiredRunRate]="data()?.requiredRunRate ?? null"
+          [recentBalls]="data()?.recentBalls ?? []"
+          [playerNameById]="playerNameMap()"
+          [striker]="currentStriker()"
+          [nonStriker]="currentNonStriker()"
+          [bowler]="currentBowler()"
+          [battingStats]="data()?.battingStats ?? []"
+          [resultText]="resultText()"
+        />
+        </a>
+
+        @if (resultText(); as r) {
+          <div class="live-match__result-banner">
+            <p class="live-match__result-text">{{ r }}</p>
+             @if (canScore() && m.status === 'completed') {
+              <button type="button" class="live-match__reopen-btn" [disabled]="reopeningMatch()" (click)="reopenMatch()">
+                @if (reopeningMatch()) { Reopening... } @else { Fix a mistake }
+              </button>
+            }
+          </div>
+        }
+        @if (canScore()) {
+          <div class="live-match__scoring">
+            @if ((data()?.recentBalls?.length ?? 0) > 0 && m.status !== 'completed') {
+              <button type="button" class="live-match__undo-btn" [disabled]="undoSubmitting()" (click)="undoLastBall()">
+                <span class="material-icons">undo</span>
+                @if (undoSubmitting()) { Undoing... } @else { Undo last ball }
+              </button>
+            }
+
+            @if (isMatchOver()) {
+              @if (m.status !== 'completed') {
+                <button type="button" class="live-match__finish-btn" [disabled]="finishingMatch()" (click)="finishMatch()">
+                  @if (finishingMatch()) { Finishing match... } @else { Finish match }
+                </button>
+              }
+            } @else if (innings()?.isCompleted) {
+              <button type="button" class="live-match__next-innings-btn" [disabled]="startingNextInnings()" (click)="startNextInnings()">
+                Start next innings
+              </button>
+            } @else if (needsOpeningPlayers()) {
+              <app-opening-players-form
+                [battingRoster]="battingTeamRoster()"
+                [bowlingRoster]="bowlingTeamRoster()"
+                (confirmed)="confirmOpeners($event)"
+              />
+            } @else if (needsNextBowler()) {
+              <app-next-bowler-form
+                [bowlingRoster]="bowlingTeamRoster()"
+                [previousOverBowlerId]="previousOverBowlerId()"
+                [overNumber]="currentOverNumber()"
+                (confirmed)="confirmNextBowler($event)"
+              />
+            } @else if (needsNextBatsman()){
+              <app-next-batsman-form
+                [battingRoster]="battingTeamRoster()"
+                [excludedPlayerIds]="excludedBatsmanIds()"
+                (confirmed)="confirmNextBatsman($event)"
+              />
+            } @else if (currentStriker() && currentNonStriker() && currentBowler()) {
+              <app-ball-controls
+                [striker]="currentStriker()!"
+                [nonStriker]="currentNonStriker()!"
+                [bowler]="currentBowler()!"
+                [battingRoster]="battingTeamRoster()"
+                [bowlingRoster]="bowlingTeamRoster()"
+                [submitting]="ballSubmitting()"
+                (ballSubmit)="recordBall($event)"
+              />
+            }
+          </div>
+        } @else if (m.status !== 'completed') {
+          <p class="live-match__viewer-note">You're watching live. Scoring is handled by the match's scorer.</p>
+        }
+      </div>
+    }
+  </div>
+} @else {
+  <p>Loading match...</p>
+}

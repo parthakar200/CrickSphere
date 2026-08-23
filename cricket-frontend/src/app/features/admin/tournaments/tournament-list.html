@@ -1,0 +1,51 @@
+<div class="admin-page__header">
+  <h2 class="font-display">Tournaments</h2>
+  <a routerLink="/admin/tournaments/new" class="admin-page__create-btn">
+    <span class="material-icons">add</span> New tournament
+  </a>
+</div>
+
+@if (tournaments().length === 0) {
+  <div class="admin-empty">
+    <span class="material-icons">emoji_events</span>
+    <p>No tournaments yet. Create your first tournament to get started.</p>
+  </div>
+} @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Format</th>
+          <th>Match type</th>
+          <th>Teams</th>
+          <th>Dates</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (tournament of tournaments(); track tournament._id) {
+          <tr>
+            <td>{{ tournament.name }}</td>
+            <td>{{ tournament.format }}</td>
+            <td>{{ tournament.matchType }}</td>
+            <td>{{ teamCount(tournament) }}</td>
+            <td>{{ tournament.startDate | date: 'mediumDate' }} - {{ tournament.endDate | date: 'mediumDate' }}</td>
+            <td><span class="admin-table__badge" [class]="statusBadgeClass(tournament.status)">{{ tournament.status }}</span></td>
+            <td>
+              <div class="admin-table__actions">
+                <a [routerLink]="['/admin/tournaments', tournament._id, 'edit']" class="admin-table__icon-btn" title="Edit">
+                  <span class="material-icons">edit</span>
+                </a>
+                <button type="button" class="admin-table__icon-btn admin-table__icon-btn--danger" title="Delete" (click)="deleteTournament(tournament)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

@@ -1,0 +1,59 @@
+<div class="admin-page__header">
+  <h2 class="font-display">Teams</h2>
+  <a routerLink="/admin/teams/new" class="admin-page__create-btn">
+    <span class="material-icons">add</span> New team
+  </a>
+</div>
+
+@if (teams().length === 0) {
+  <div class="admin-empty">
+    <span class="material-icons">groups</span>
+    <p>No teams yet. Create your first team to get started.</p>
+  </div>
+} @else {
+  <div class="admin-table-wrap">
+    <table class="admin-table">
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Short name</th>
+          <th>Home ground</th>
+          <th>Squad</th>
+          <th>Status</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (team of teams(); track team._id) {
+          <tr>
+            <td>{{ team.name }}</td>
+            <td>{{ team.shortName }}</td>
+            <td>{{ team.homeGround || '—' }}</td>
+            <td>
+              @if (team.tournament) {
+                <a [routerLink]="['/admin/teams', team._id, 'squad']" class="team-squad__manage-link">Manage squad</a>
+              } @else {
+                <span class="team-squad__na">— (standalone)</span>
+              }
+            </td>
+            <td>
+              <span class="admin-table__badge" [class.admin-table__badge--crimson]="!team.isActive">
+                {{ team.isActive ? 'Active' : 'Inactive' }}
+              </span>
+            </td>
+            <td>
+              <div class="admin-table__actions">
+                <a [routerLink]="['/admin/teams', team._id, 'edit']" class="admin-table__icon-btn" title="Edit">
+                  <span class="material-icons">edit</span>
+                </a>
+                <button type="button" class="admin-table__icon-btn admin-table__icon-btn--danger" title="Delete" (click)="deleteTeam(team)">
+                  <span class="material-icons">delete</span>
+                </button>
+              </div>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+  </div>
+}

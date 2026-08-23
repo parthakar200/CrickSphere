@@ -1,0 +1,142 @@
+@if (innings(); as inn) {
+
+<div class="scorecard glass-panel">
+  <div>
+    <span>{{ $any(inn.battingTeam).name }}</span>
+  </div>
+  <div class="scorecard__score">
+    <span class="scorecard__runs font-display">{{ inn.totalRuns }}/{{ inn.totalWickets }}</span>
+    <span class="scorecard__overs font-mono">({{ oversDisplay() }} ov)</span>
+  </div>
+
+  <div class="scorecard__rates">
+    <div class="scorecard__rate">
+      <small>CRR</small>
+      <span class="font-mono">{{ runRate() }}</span>
+    </div>
+    @if (requiredRunRate() !== null) {
+    <div class="scorecard__rate">
+      <small>RRR</small>
+      <span class="font-mono">{{ requiredRunRate() }}</span>
+    </div>
+    }
+    @if (inn.target) {
+    <div class="scorecard__rate">
+      <small>Target</small>
+      <span class="font-mono">{{ inn.target }}</span>
+    </div>
+    }
+  </div>
+
+  <div class="scorecard__rate">
+    <table>
+      <tr class="table_heading">
+        <td>Batting</td>
+        <td>R</td>
+        <td>B</td>
+        <td>4s</td>
+        <td>6s</td>
+        <td>S/R</td>
+      </tr>
+      <tr class="score_data">
+        <td class="tbl_data">
+          @if (striker(); as s) {
+            {{ s.name }}*
+          } @else {
+            <span class="scorecard__pending">*</span>
+          }
+        </td>
+        @if (statsFor(striker()?._id); as st) {
+          <td>{{ st.runs }}</td>
+          <td>{{ st.ballsFaced }}</td>
+          <td>{{ st.fours }}</td>
+          <td>{{ st.sixes }}</td>
+          <td>{{ st.strikeRate }}</td>
+        } @else {
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+        }
+      </tr>
+      <tr class="score_data">
+        <td class="tbl_data">
+          @if (nonStriker(); as ns) {
+            {{ ns.name }}
+          } @else {
+            <span class="scorecard__pending"></span>
+          }
+        </td>
+        @if (statsFor(nonStriker()?._id); as st) {
+          <td>{{ st.runs }}</td>
+          <td>{{ st.ballsFaced }}</td>
+          <td>{{ st.fours }}</td>
+          <td>{{ st.sixes }}</td>
+          <td>{{ st.strikeRate }}</td>
+        } @else {
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+          <td>0</td>
+        }
+      </tr>
+    </table>
+  </div>
+
+  @if (activePartnership(); as p) {
+  <div class="scorecard__partnership">
+    <span class="material-icons">groups</span>
+    Partnership: {{ p.runs }} runs ({{ p.balls }} balls)
+  </div>
+  }
+
+  @if (resultText(); as r) {
+    <div class="scorecard__required scorecard__required--result">
+      <p class="scorecard__required-line">{{ r }}</p>
+    </div>
+  } @else if (target(); as t) {
+    <div class="scorecard__required">
+      <p class="scorecard__required-line">
+        Need <strong>{{ runsNeeded() }}</strong> runs off <strong>{{ ballsRemaining() }}</strong> balls
+      </p>
+      <p class="scorecard__required-sub">
+        RRR {{ requiredRunRate() }} · {{ requiredRunPerBall() }} runs/ball
+      </p>
+    </div>
+  }
+
+  @if (currentOverBalls().length > 0) {
+  <div class="scorecard__recent">
+    <small>This over</small>
+    <span class="scorecard__partnership">{{bowler()?.name}}</span>
+    <div class="scorecard__balls">
+      @for (ball of currentOverBalls(); track ball._id) {
+      <span class="ball-chip" [class]="ballClass(ball)">{{ ballDisplay(ball) }}</span>
+      }
+    </div>
+  </div>
+  } @else if (recentBalls().length > 0) {
+  <div class="scorecard__recent">
+    <small>Recent balls</small>
+    <div class="scorecard__balls">
+      @for (ball of recentBalls(); track ball._id) {
+      <span class="ball-chip" [class]="ballClass(ball)">{{ ballDisplay(ball) }}</span>
+      }
+    </div>
+  </div>
+  }
+
+  @if (inn.extras) {
+  <div class="scorecard__extras">
+    Extras: {{ inn.extras.wides + inn.extras.noBalls + inn.extras.byes + inn.extras.legByes + inn.extras.penalty }}
+    (wd {{ inn.extras.wides }}, nb {{ inn.extras.noBalls }}, b {{ inn.extras.byes }}, lb {{ inn.extras.legByes }})
+  </div>
+  }
+</div>
+} @else {
+<div class="scorecard glass-panel scorecard--empty">
+  <p>Innings not started yet.</p>
+</div>
+}

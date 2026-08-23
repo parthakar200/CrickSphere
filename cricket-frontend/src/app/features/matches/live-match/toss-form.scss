@@ -1,0 +1,121 @@
+.toss-form {
+  max-width: 480px;
+  padding: 1.5rem;
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+
+  h2 {
+    font-size: 1.1rem;
+    margin: 0;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: 0;
+    color: var(--color-text-secondary);
+    font-size: 0.85rem;
+  }
+}
+
+.toss-form__teams {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.toss-form__vs {
+  color: var(--color-text-tertiary);
+  font-size: 0.8rem;
+  font-weight: 600;
+}
+
+.toss-form__team-btn {
+  flex: 1;
+  padding: 0.85rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-primary);
+  font-weight: 600;
+  font-size: 0.85rem;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-electric);
+  }
+
+  &--selected {
+    background: var(--color-electric-soft);
+    border-color: var(--color-electric);
+    color: var(--color-electric);
+  }
+}
+
+.toss-form__decision {
+  display: flex;
+  gap: 0.6rem;
+}
+
+.toss-form__decision-btn {
+  flex: 1;
+  padding: 0.6rem;
+  border-radius: var(--radius-control);
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  color: var(--color-text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+
+  &:hover {
+    border-color: var(--color-purple);
+  }
+
+  &--selected {
+    background: var(--color-purple-soft);
+    border-color: var(--color-purple);
+    color: var(--color-purple);
+  }
+}
+
+.toss-form__submit {
+  height: 44px;
+  border-radius: var(--radius-control);
+  border: none;
+  background: linear-gradient(135deg, var(--color-electric), var(--color-purple));
+  color: white;
+  font-weight: 700;
+  font-size: 0.875rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.toss-form__spinner {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.4);
+  border-top-color: white;
+  animation: toss-spin 0.7s linear infinite;
+}
+
+@keyframes toss-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .toss-form__spinner {
+    animation: none;
+  }
+}

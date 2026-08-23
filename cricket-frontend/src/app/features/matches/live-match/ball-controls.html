@@ -1,0 +1,99 @@
+<div class="ball-controls card-flat">
+  <div class="ball-controls__current">
+    <span><strong>{{ striker().name }}*</strong> &amp; {{ nonStriker().name }}</span>
+    <span class="ball-controls__bowler">Bowler: <strong>{{ bowler().name }}</strong></span>
+  </div>
+
+  <div class="ball-controls__section">
+    <span class="ball-controls__label">Extras</span>
+    <div class="ball-controls__chip-row">
+      @for (extra of extraOptions; track extra) {
+        <button
+          type="button"
+          class="ball-controls__chip"
+          [class.ball-controls__chip--active]="selectedExtra() === extra"
+          (click)="setExtra(extra)"
+        >
+          {{ extra }}
+        </button>
+      }
+    </div>
+  </div>
+
+  @if (selectedExtra() === 'none' || isNoBall()) {
+    <div class="ball-controls__section">
+      <span class="ball-controls__label">{{ isNoBall() ? 'Runs off the bat (no-ball)' : 'Runs' }}</span>
+      <div class="ball-controls__run-row">
+        @for (run of [0, 1, 2, 3, 4, 5, 6]; track run) {
+          <button
+            type="button"
+            class="ball-controls__run-btn"
+            [class.ball-controls__run-btn--active]="batRuns() === run"
+            [class.ball-controls__run-btn--boundary]="run === 4 || run === 6"
+            (click)="setBatRuns(run)"
+          >
+            {{ run }}
+          </button>
+        }
+      </div>
+    </div>
+  }
+
+  @if (needsByeStyleRuns() || isNoBall()) {
+    <div class="ball-controls__section">
+      <span class="ball-controls__label">{{ isNoBall() ? 'No-ball penalty' : 'Extra runs' }}</span>
+      <input
+        type="number"
+        class="ball-controls__extra-input"
+        [value]="extraRunsValue()"
+        (input)="extraRunsValue.set(+$any($event.target).value)"
+        min="0"
+      />
+    </div>
+  }
+
+  <div class="ball-controls__section">
+    <button type="button" class="ball-controls__wicket-toggle" [class.ball-controls__wicket-toggle--active]="isWicket()" (click)="toggleWicket()">
+      <span class="material-icons">sports_cricket</span> Wicket
+    </button>
+  </div>
+
+  @if (isWicket()) {
+    <div class="ball-controls__wicket-details">
+      <label class="ball-controls__field">
+        <span>Dismissal type</span>
+        <select [value]="dismissalType()" (change)="dismissalType.set($any($event.target).value)">
+          @for (type of dismissalTypes; track type) {
+            <option [value]="type">{{ type }}</option>
+          }
+        </select>
+      </label>
+
+      @if (isRunOutStyle()) {
+        <label class="ball-controls__checkbox">
+          <input type="checkbox" [checked]="playerOutIsNonStriker()" (change)="playerOutIsNonStriker.set($any($event.target).checked)" />
+          Non-striker is the one run out (not the striker)
+        </label>
+      }
+
+      @if (needsFielder()) {
+        <label class="ball-controls__field">
+          <span>Fielder</span>
+          <select [value]="fielderId()" (change)="fielderId.set($any($event.target).value)">
+            <option value="">Select fielder</option>
+            @for (player of bowlingRoster(); track player._id) {
+              <option [value]="player._id">{{ player.name }}</option>
+            }
+          </select>
+        </label>
+      }
+    </div>
+  }
+
+  <button type="button" class="ball-controls__submit" [disabled]="!canSubmit() || submitting()" (click)="submit()">
+    @if (submitting()) {
+      <span class="ball-controls__spinner"></span>
+    }
+    Record ball
+  </button>
+</div>

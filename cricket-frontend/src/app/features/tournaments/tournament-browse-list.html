@@ -1,0 +1,29 @@
+<div class="tournament-browse">
+  <header class="tournament-browse__header">
+    <h1 class="font-display">Tournaments</h1>
+    <p>Points tables, schedules, and results for every tournament.</p>
+  </header>
+
+  @if (tournaments().length === 0) {
+    <div class="tournament-browse__empty">
+      <span class="material-icons">emoji_events</span>
+      <p>No tournaments yet.</p>
+    </div>
+  } @else {
+    <div class="tournament-browse__grid">
+      @for (tournament of tournaments(); track tournament._id) {
+        <a [routerLink]="['/tournaments', tournament._id]" class="tournament-card card-flat">
+          <div class="tournament-card__icon">
+            <span class="material-icons">emoji_events</span>
+          </div>
+          <div class="tournament-card__body">
+            <strong>{{ tournament.name }}</strong>
+            <span class="tournament-card__meta">{{ tournament.format }} · {{ tournament.matchType }} · {{ teamCount(tournament) }} teams</span>
+            <span class="tournament-card__dates font-mono">{{ tournament.startDate | date: 'mediumDate' }} - {{ tournament.endDate | date: 'mediumDate' }}</span>
+          </div>
+          <span class="tournament-card__badge" [class]="statusBadgeClass(tournament.status)">{{ tournament.status }}</span>
+        </a>
+      }
+    </div>
+  }
+</div>
