@@ -1,5 +1,5 @@
 import { HttpErrorResponse, HttpInterceptorFn } from '@angular/common/http';
-import { inject } from '@angular/core';
+import { inject, Injector } from '@angular/core';
 import { BehaviorSubject, catchError, filter, switchMap, take, throwError } from 'rxjs';
 import { AuthService } from '../services/auth.service';
 import { TokenStorageService } from '../services/token-storage.service';
@@ -19,7 +19,7 @@ const refreshedTokenSubject = new BehaviorSubject<string | null>(null);
  * user is redirected to login.
  */
 export const authRefreshInterceptor: HttpInterceptorFn = (req, next) => {
-  const authService = inject(AuthService);
+  const injector = inject(Injector);
   const tokens = inject(TokenStorageService);
 
   const isAuthEndpoint = /\/auth\/(login|register|refresh)$/.test(req.url);
@@ -29,6 +29,8 @@ export const authRefreshInterceptor: HttpInterceptorFn = (req, next) => {
       if (!(error instanceof HttpErrorResponse) || error.status !== 401 || isAuthEndpoint) {
         return throwError(() => error);
       }
+
+      const authService = injector.get(AuthService);
 
       if (isRefreshing) {
         // Wait for the in-flight refresh to finish, then retry with the new token.

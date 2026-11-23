@@ -1,9 +1,11 @@
 require('dotenv').config();
 
+const cleanUrl = (url) => (url ? url.trim().replace(/\/+$/, '') : '');
+
 module.exports = {
   env: process.env.NODE_ENV || 'development',
   port: process.env.PORT || 5000,
-  clientUrl: process.env.CLIENT_URL || 'http://localhost:4200',
+  clientUrl: cleanUrl(process.env.CLIENT_URL) || 'http://localhost:4200',
 
   mongoUri: process.env.MONGO_URI || 'mongodb://localhost:27017/cricket_management',
 

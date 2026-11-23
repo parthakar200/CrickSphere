@@ -35,8 +35,10 @@ export class LocalityService {
 
   constructor() {
     this.restoreFromStorage();
-    this.loadLocalities().subscribe({
-      error: (err) => console.error('Failed initial load of localities:', err),
+    queueMicrotask(() => {
+      this.loadLocalities().subscribe({
+        error: (err) => console.error('Failed initial load of localities:', err),
+      });
     });
   }
 
