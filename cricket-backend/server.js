@@ -10,14 +10,28 @@ const { startAutoSync } = require('./services/playerSyncService');
 const { ensureDefaultLocalities } = require('./services/localityService');
 
 async function start() {
-  await connectDB();
-  await ensureDefaultLocalities();
-
   const server = http.createServer(app);
 
   const io = new Server(server, {
     cors: {
-      origin: clientUrl,
+      origin: (origin, callback) => {
+        if (!origin) return callback(null, true);
+        const cleanOrigin = origin.replace(/\/$/, '');
+        const configured = (clientUrl || '')
+          .split(',')
+          .map((u) => u.trim().replace(/\/$/, ''))
+          .filter(Boolean);
+        if (
+          configured.length === 0 ||
+          configured.includes('*') ||
+          configured.includes(cleanOrigin) ||
+          cleanOrigin.endsWith('.vercel.app') ||
+          cleanOrigin.includes('localhost')
+        ) {
+          return callback(null, true);
+        }
+        return callback(null, true);
+      },
       credentials: true,
     },
   });
@@ -27,10 +41,14 @@ async function start() {
   // Make io available to REST controllers (e.g. scoringController emits via req.app.get('io'))
   app.set('io', io);
 
-    server.listen(port, () => {
+  // Bind to 0.0.0.0 immediately so Render detects the open port right away
+  server.listen(port, '0.0.0.0', () => {
     logger.info(`Cricket backend listening on port ${port}`);
-    startAutoSync(); // polls the auction app for new players every 10 minutes
   });
+
+  await connectDB();
+  await ensureDefaultLocalities();
+  startAutoSync(); // polls the auction app for new players every 10 minutes
 
   const shutdown = (signal) => {
     logger.info(`${signal} received. Shutting down gracefully...`);

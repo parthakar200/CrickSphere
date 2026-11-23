@@ -23,13 +23,34 @@ const leaderboardRoutes = require('./routes/leaderboardRoutes');
 const statisticsRoutes = require('./routes/statisticsRoutes');
 const searchRoutes = require('./routes/searchRoutes');
 
+const isAllowedOrigin = (origin) => {
+  if (!origin) return true;
+  const cleanOrigin = origin.replace(/\/$/, '');
+  const configured = (clientUrl || '')
+    .split(',')
+    .map((u) => u.trim().replace(/\/$/, ''))
+    .filter(Boolean);
+  return (
+    configured.length === 0 ||
+    configured.includes('*') ||
+    configured.includes(cleanOrigin) ||
+    cleanOrigin.endsWith('.vercel.app') ||
+    cleanOrigin.includes('localhost')
+  );
+};
+
 const app = express();
 
 // ---- Security & infra middleware ----
 app.use(helmet());
 app.use(
   cors({
-    origin: clientUrl,
+    origin: (origin, callback) => {
+      if (isAllowedOrigin(origin)) {
+        return callback(null, true);
+      }
+      return callback(null, true);
+    },
     credentials: true,
   })
 );
