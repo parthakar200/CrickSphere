@@ -24,6 +24,11 @@ export class ToastContainer {
     }
   }
 
+  onCloseClick(event: MouseEvent, id: number): void {
+    event.stopPropagation();
+    this.dismiss(id);
+  }
+
   dismiss(id: number): void {
     this.notifications.dismiss(id);
   }

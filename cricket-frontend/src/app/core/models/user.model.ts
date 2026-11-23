@@ -1,3 +1,5 @@
+import { Locality } from './locality.model';
+
 export type UserRole = 'admin' | 'scorer' | 'viewer';
 
 export interface User {
@@ -5,6 +7,7 @@ export interface User {
   name: string;
   email: string;
   role: UserRole;
+  locality?: Locality | string | null;
   avatar?: string | null;
   isActive: boolean;
   lastLogin?: string | null;
@@ -21,6 +24,7 @@ export interface AuthResponse {
 export interface LoginPayload {
   email: string;
   password: string;
+  localityId?: string;
 }
 
 export interface RegisterPayload {

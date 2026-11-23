@@ -1,5 +1,6 @@
 
 module.exports = {
+  Locality: require('./Locality'),
   User: require('./User'),
   Team: require('./Team'),
   Player: require('./Player'),

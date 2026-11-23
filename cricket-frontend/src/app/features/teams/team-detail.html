@@ -1,5 +1,10 @@
 @if (team(); as t) {
   <div class="team-detail">
+    <button type="button" class="page-back-btn" (click)="goBack()">
+      <span class="material-icons">arrow_back</span>
+      <span>Back</span>
+    </button>
+
     <header class="team-detail__header card-flat">
       <div class="team-detail__logo">{{ t.shortName.charAt(0) }}</div>
       <div>

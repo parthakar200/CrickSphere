@@ -18,6 +18,7 @@ const { mongoUri } = require('../config/env');
 const logger = require('./logger');
 
 const {
+  Locality,
   User,
   Team,
   Player,
@@ -39,6 +40,7 @@ const { recomputeCareerStatsForPlayer } = require('../services/statsEngine');
 async function wipeCollections() {
   await Promise.all(
     [
+      Locality,
       User,
       Team,
       Player,
@@ -95,45 +97,69 @@ async function seed() {
 
   await wipeCollections();
 
+  // ---- Localities ----
+  const kudei = await Locality.create({
+    name: 'Kudei Village',
+    slug: 'kudei',
+    description: 'Tournaments, matches, and players of Kudei Village',
+    isDefault: true,
+    isActive: true,
+  });
+
+  const rampur = await Locality.create({
+    name: 'Rampur Village',
+    slug: 'rampur',
+    description: 'Tournaments, matches, and players of Rampur Village',
+    isDefault: false,
+    isActive: true,
+  });
+  logger.info('Created localities: Kudei Village (default) and Rampur Village');
+
   // ---- Users ----
   const admin = await User.create({
     name: 'Admin User',
     email: 'admin@cricket.local',
     password: 'Password123!',
     role: 'admin',
+    locality: kudei._id,
   });
   const scorer = await User.create({
-    name: 'Scorer User',
+    name: 'Kudei Scorer',
     email: 'scorer@cricket.local',
     password: 'Password123!',
     role: 'scorer',
+    locality: kudei._id,
   });
   await User.create({
-    name: 'Viewer User',
-    email: 'viewer@cricket.local',
+    name: 'Rampur Scorer',
+    email: 'scorer.rampur@cricket.local',
     password: 'Password123!',
-    role: 'viewer',
+    role: 'scorer',
+    locality: rampur._id,
   });
-  logger.info('Created demo users (admin@cricket.local / scorer@cricket.local / viewer@cricket.local, all password: Password123!)');
+  logger.info('Created demo users (admin@cricket.local / scorer@cricket.local / scorer.rampur@cricket.local, all password: Password123!)');
 
-  // ---- Teams ----
+  // ---- Teams (Kudei Village) ----
   const mumbaiTigers = await Team.create({
     name: 'Mumbai Tigers',
     shortName: 'MUT',
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const delhiDragons = await Team.create({
     name: 'Delhi Dragons',
     shortName: 'DDR',
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const chennaiChampions = await Team.create({
     name: 'Chennai Champions',
     shortName: 'CHC',
     createdBy: admin._id,
+    locality: kudei._id,
   });
 
-  // ---- Players ----
+  // ---- Players (Kudei Village) ----
   // "Star Batsman" is our stand-in for the Virat example in the spec:
   // 50 in a single match + 80 in a tournament match + 30 in another tournament match = 160 career runs.
   const starBatsman = await Player.create({
@@ -142,6 +168,7 @@ async function seed() {
     battingStyle: 'right-hand-bat',
     team: mumbaiTigers._id,
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const allRounder = await Player.create({
     name: 'All Rounder One',
@@ -150,6 +177,7 @@ async function seed() {
     bowlingStyle: 'right-arm-medium',
     team: mumbaiTigers._id,
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const fastBowlerA = await Player.create({
     name: 'Fast Bowler A',
@@ -157,6 +185,7 @@ async function seed() {
     bowlingStyle: 'right-arm-fast',
     team: delhiDragons._id,
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const fastBowlerB = await Player.create({
     name: 'Fast Bowler B',
@@ -164,12 +193,14 @@ async function seed() {
     bowlingStyle: 'left-arm-fast',
     team: chennaiChampions._id,
     createdBy: admin._id,
+    locality: kudei._id,
   });
   const wicketKeeper = await Player.create({
     name: 'Keeper Gloves',
     role: 'wicket-keeper',
     team: delhiDragons._id,
     createdBy: admin._id,
+    locality: kudei._id,
   });
 
   await Team.findByIdAndUpdate(mumbaiTigers._id, { $push: { players: { $each: [starBatsman._id, allRounder._id] } } });
@@ -189,6 +220,7 @@ async function seed() {
     matchType: 'T20',
     overs: 20,
     createdBy: admin._id,
+    locality: kudei._id,
     scorers: [scorer._id],
     toss: { winner: mumbaiTigers._id, decision: 'bat' },
     status: 'live',
@@ -235,6 +267,7 @@ async function seed() {
     matchType: 'T20',
     oversPerMatch: 20,
     teams: [mumbaiTigers._id, delhiDragons._id, chennaiChampions._id],
+    locality: kudei._id,
     createdBy: admin._id,
   });
 
@@ -258,6 +291,7 @@ async function seed() {
     matchType: 'T20',
     overs: 20,
     createdBy: admin._id,
+    locality: kudei._id,
     scorers: [scorer._id],
     toss: { winner: mumbaiTigers._id, decision: 'bat' },
     status: 'live',
@@ -306,6 +340,7 @@ async function seed() {
     matchType: 'T20',
     overs: 20,
     createdBy: admin._id,
+    locality: kudei._id,
     scorers: [scorer._id],
     toss: { winner: mumbaiTigers._id, decision: 'bat' },
     status: 'live',

@@ -2,19 +2,43 @@ const mongoose = require('mongoose');
 const { BattingStats, BowlingStats, Match, Team, Player } = require('../models');
 const asyncHandler = require('../utils/asyncHandler');
 
+// Helper to resolve match filters scoped by tournament and locality
+async function buildMatchFilter(localityId, tournamentId) {
+  const filter = {};
+  if (tournamentId) {
+    filter.tournament = new mongoose.Types.ObjectId(tournamentId);
+  }
+  if (localityId) {
+    const matchIds = await Match.find({ locality: localityId }).distinct('_id');
+    filter.match = { $in: matchIds };
+  }
+  return filter;
+}
+
 // GET /api/statistics/overview  -> global numbers for the Statistics Center landing page
 const getOverview = asyncHandler(async (req, res) => {
+  const locFilter = req.localityId ? { locality: req.localityId } : {};
   const [totalPlayers, totalTeams, totalMatches, completedMatches] = await Promise.all([
-    Player.countDocuments({ isActive: true }),
-    Team.countDocuments({ isActive: true }),
-    Match.countDocuments(),
-    Match.countDocuments({ status: 'completed' }),
+    Player.countDocuments({ isActive: true, ...locFilter }),
+    Team.countDocuments({ isActive: true, ...locFilter }),
+    Match.countDocuments({ ...locFilter }),
+    Match.countDocuments({ status: 'completed', ...locFilter }),
   ]);
 
+  let matchQuery = {};
+  if (req.localityId) {
+    const localityMatchIds = await Match.find({ locality: req.localityId }).distinct('_id');
+    matchQuery = { match: { $in: localityMatchIds } };
+  }
+
   const [runsAgg] = await BattingStats.aggregate([
+    { $match: matchQuery },
     { $group: { _id: null, totalRuns: { $sum: '$runs' }, totalSixes: { $sum: '$sixes' }, totalFours: { $sum: '$fours' } } },
   ]);
-  const [wicketsAgg] = await BowlingStats.aggregate([{ $group: { _id: null, totalWickets: { $sum: '$wickets' } } }]);
+  const [wicketsAgg] = await BowlingStats.aggregate([
+    { $match: matchQuery },
+    { $group: { _id: null, totalWickets: { $sum: '$wickets' } } },
+  ]);
 
   res.json({
     success: true,
@@ -33,12 +57,10 @@ const getOverview = asyncHandler(async (req, res) => {
 
 // GET /api/statistics/batting-analytics  -> chart-ready data: top scorers, run distribution, SR analysis
 const getBattingAnalytics = asyncHandler(async (req, res) => {
-  const tournamentFilter = req.query.tournament
-  ? { tournament: new mongoose.Types.ObjectId(req.query.tournament) }
-  : {};
+  const matchFilter = await buildMatchFilter(req.localityId, req.query.tournament);
 
   const topRunScorers = await BattingStats.aggregate([
-    { $match: tournamentFilter },
+    { $match: matchFilter },
     { $group: { _id: '$player', runs: { $sum: '$runs' } } },
     { $sort: { runs: -1 } },
     { $limit: 10 },
@@ -49,7 +71,7 @@ const getBattingAnalytics = asyncHandler(async (req, res) => {
 
   // Run distribution buckets: 0s, 1-25, 26-50, 51-100, 100+
   const runDistribution = await BattingStats.aggregate([
-    { $match: tournamentFilter },
+    { $match: matchFilter },
     {
       $bucket: {
         groupBy: '$runs',
@@ -60,8 +82,8 @@ const getBattingAnalytics = asyncHandler(async (req, res) => {
     },
   ]);
 
-    const strikeRateAnalysis = await BattingStats.aggregate([
-    { $match: tournamentFilter },
+  const strikeRateAnalysis = await BattingStats.aggregate([
+    { $match: matchFilter },
     {
       $group: {
         _id: '$player',
@@ -84,12 +106,10 @@ const getBattingAnalytics = asyncHandler(async (req, res) => {
 
 // GET /api/statistics/bowling-analytics
 const getBowlingAnalytics = asyncHandler(async (req, res) => {
-  const tournamentFilter = req.query.tournament
-  ? { tournament: new mongoose.Types.ObjectId(req.query.tournament) }
-  : {};
+  const matchFilter = await buildMatchFilter(req.localityId, req.query.tournament);
 
   const topWicketTakers = await BowlingStats.aggregate([
-    { $match: tournamentFilter },
+    { $match: matchFilter },
     { $group: { _id: '$player', wickets: { $sum: '$wickets' } } },
     { $sort: { wickets: -1 } },
     { $limit: 10 },
@@ -99,7 +119,7 @@ const getBowlingAnalytics = asyncHandler(async (req, res) => {
   ]);
 
   const economyAnalysis = await BowlingStats.aggregate([
-    { $match: { ...tournamentFilter, ballsBowled: { $gte: 12 } } },
+    { $match: { ...matchFilter, ballsBowled: { $gte: 12 } } },
     { $group: { _id: '$player', avgEconomy: { $avg: '$economy' } } },
     { $sort: { avgEconomy: 1 } },
     { $limit: 10 },
@@ -109,7 +129,7 @@ const getBowlingAnalytics = asyncHandler(async (req, res) => {
   ]);
 
   const dotBallAnalysis = await BowlingStats.aggregate([
-    { $match: tournamentFilter },
+    { $match: matchFilter },
     { $group: { _id: '$player', dotBalls: { $sum: '$dotBalls' }, ballsBowled: { $sum: '$ballsBowled' } } },
     { $addFields: { dotBallPercentage: { $multiply: [{ $divide: ['$dotBalls', '$ballsBowled'] }, 100] } } },
     { $sort: { dotBalls: -1 } },
@@ -131,20 +151,21 @@ const getBowlingAnalytics = asyncHandler(async (req, res) => {
 
 // GET /api/statistics/team-analytics
 const getTeamAnalytics = asyncHandler(async (req, res) => {
-  const tournamentFilter = req.query.tournament
-  ? { tournament: new mongoose.Types.ObjectId(req.query.tournament) }
-  : {};
+  const matchFilter = await buildMatchFilter(req.localityId, req.query.tournament);
 
   const teamComparison = await BattingStats.aggregate([
-    { $match: tournamentFilter },
+    { $match: matchFilter },
     { $group: { _id: '$team', runs: { $sum: '$runs' }, fours: { $sum: '$fours' }, sixes: { $sum: '$sixes' } } },
     { $lookup: { from: 'teams', localField: '_id', foreignField: '_id', as: 'team' } },
     { $unwind: '$team' },
     { $project: { _id: 0, team: '$team.name', runs: 1, fours: 1, sixes: 1 } },
   ]);
 
-  const matchFilter = req.query.tournament ? { tournament: req.query.tournament, status: 'completed' } : { status: 'completed' };
-  const matches = await Match.find(matchFilter).select('teamA teamB result');
+  const matchQuery = { status: 'completed' };
+  if (req.query.tournament) matchQuery.tournament = req.query.tournament;
+  if (req.localityId) matchQuery.locality = req.localityId;
+
+  const matches = await Match.find(matchQuery).select('teamA teamB result');
 
   const winTally = {};
   matches.forEach((m) => {

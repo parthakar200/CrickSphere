@@ -1,1 +1,328 @@
 @use '../auth-shared' as *;
+
+.auth-page__village-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.85rem;
+  background: rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--color-border);
+  border-radius: 999px;
+  font-size: 0.85rem;
+  color: var(--color-text-secondary);
+  margin-bottom: 2rem;
+
+  .material-icons {
+    font-size: 16px;
+    color: var(--color-emerald);
+  }
+
+  strong {
+    color: var(--color-text-primary);
+  }
+}
+
+.viewer-access-card {
+  background: var(--color-surface);
+  border: 1.5px solid var(--color-emerald);
+  border-radius: var(--radius-surface);
+  padding: 1.25rem;
+  box-shadow: 0 4px 16px rgba(16, 185, 129, 0.08);
+}
+
+.viewer-access-card__header {
+  display: flex;
+  gap: 0.85rem;
+  align-items: flex-start;
+  margin-bottom: 1rem;
+
+  .viewer-icon {
+    font-size: 26px;
+    color: var(--color-emerald);
+    background: rgba(16, 185, 129, 0.12);
+    padding: 0.45rem;
+    border-radius: 50%;
+  }
+
+  h3 {
+    margin: 0 0 0.25rem;
+    font-size: 1.05rem;
+    font-weight: 700;
+    color: var(--color-text-primary);
+  }
+
+  p {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    color: var(--color-text-secondary);
+  }
+}
+
+.viewer-access-card__action {
+  display: flex;
+  flex-direction: column;
+  gap: 0.85rem;
+}
+
+.auth-form__select {
+  border: 1px solid var(--color-border);
+  background: var(--color-bg);
+  border-radius: var(--radius-control);
+  padding: 0.7rem 0.85rem;
+  font-size: 0.9rem;
+  color: var(--color-text-primary);
+  font-family: var(--font-body);
+  outline: none;
+  cursor: pointer;
+  transition: border-color 0.15s ease;
+
+  &:focus {
+    border-color: var(--color-electric);
+  }
+}
+
+.auth-form__loading-hint {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.7rem 0.85rem;
+  font-size: 0.85rem;
+  color: var(--color-text-tertiary);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  background: var(--color-bg);
+
+  .material-icons {
+    font-size: 16px;
+  }
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+.btn-viewer-go {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 44px;
+  border-radius: var(--radius-control);
+  border: none;
+  background: linear-gradient(135deg, #10b981, #059669);
+  color: white;
+  font-weight: 700;
+  font-size: 0.95rem;
+  cursor: pointer;
+  box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+  transition: transform 0.15s ease, filter 0.15s ease;
+
+  &:hover:not(:disabled) {
+    filter: brightness(1.08);
+    transform: translateY(-1px);
+  }
+
+  &:active {
+    transform: translateY(0);
+  }
+
+  &:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .material-icons {
+    font-size: 19px;
+  }
+}
+
+.auth-separator {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  margin: 1.25rem 0 1rem;
+  color: var(--color-text-tertiary);
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+
+  &::before,
+  &::after {
+    content: '';
+    flex: 1;
+    border-bottom: 1px solid var(--color-border);
+  }
+
+  span {
+    padding: 0 0.85rem;
+  }
+}
+
+// Mode select buttons below spectator section
+.auth-mode-options {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+.btn-mode-select {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.85rem 1rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-surface);
+  color: var(--color-text-primary);
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  .material-icons:first-child {
+    font-size: 22px;
+    padding: 0.4rem;
+    border-radius: 8px;
+    flex-shrink: 0;
+  }
+
+  .arrow {
+    margin-left: auto;
+    font-size: 18px;
+    color: var(--color-text-tertiary);
+    transition: transform 0.15s ease;
+  }
+
+  &__text {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+
+    strong {
+      font-size: 0.92rem;
+      font-weight: 700;
+    }
+
+    small {
+      font-size: 0.72rem;
+      color: var(--color-text-tertiary);
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+  }
+
+  &:hover {
+    border-color: var(--color-electric);
+    transform: translateY(-1px);
+
+    .arrow {
+      transform: translateX(2px);
+      color: var(--color-electric);
+    }
+  }
+}
+
+.btn-mode-signin {
+  .material-icons:first-child {
+    color: var(--color-electric);
+    background: var(--color-electric-soft);
+  }
+}
+
+.btn-mode-signup {
+  .material-icons:first-child {
+    color: var(--color-purple);
+    background: rgba(168, 85, 247, 0.12);
+  }
+}
+
+// Header with back button in Sign In / Sign Up views
+.auth-header-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 1.25rem;
+
+  &__title {
+    h2 {
+      margin: 0 0 0.2rem;
+      font-size: 1.35rem;
+      color: var(--color-text-primary);
+    }
+
+    p {
+      margin: 0;
+      font-size: 0.82rem;
+      color: var(--color-text-secondary);
+    }
+  }
+}
+
+.btn-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  padding: 0.4rem 0.65rem;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-control);
+  color: var(--color-text-secondary);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  flex-shrink: 0;
+  margin-top: 0.15rem;
+  transition: all 0.15s ease;
+
+  .material-icons {
+    font-size: 15px;
+  }
+
+  &:hover {
+    border-color: var(--color-electric);
+    color: var(--color-electric);
+  }
+}
+
+.btn-signup-submit {
+  background: linear-gradient(135deg, var(--color-purple), var(--color-electric));
+}
+
+.auth-switch-links {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4rem;
+  margin-top: 1.25rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--color-border);
+  font-size: 0.82rem;
+  color: var(--color-text-secondary);
+}
+
+.btn-link {
+  background: none;
+  border: none;
+  padding: 0;
+  color: var(--color-electric);
+  font-weight: 700;
+  font-size: 0.82rem;
+  cursor: pointer;
+  text-decoration: underline;
+
+  &:hover {
+    filter: brightness(1.2);
+  }
+}
+
+@media (max-width: 480px) {
+  .auth-mode-options {
+    grid-template-columns: 1fr;
+  }
+}

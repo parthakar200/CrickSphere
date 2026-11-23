@@ -40,4 +40,44 @@ async function syncPlayers(createdByUserId) {
   }
 }
 
-module.exports = { syncPlayers };
+
+/**
+ * Polls the auction app for new players every `intervalMs` (default: 10
+ * minutes) so newly added players show up here without anyone clicking
+ * "Sync" manually. Runs once immediately on startup, then on the interval.
+ *
+ * syncPlayers() needs a `createdByUserId` to attribute newly-inserted
+ * players to (only used via $setOnInsert, so it never touches players that
+ * already exist) — for an automatic run there's no "current admin" making
+ * the request, so this attributes new players to the first admin account
+ * found. That lookup is cached after the first successful run rather than
+ * re-queried every cycle.
+ */
+function startAutoSync(intervalMs = 10 * 60 * 1000) {
+  const { User } = require('../models');
+  const logger = require('../utils/logger');
+
+  let systemUserId = null;
+
+  async function runOnce() {
+    try {
+      if (!systemUserId) {
+        const admin = await User.findOne({ role: 'admin' }).select('_id');
+        if (!admin) {
+          logger.warn('Player auto-sync skipped: no admin user exists yet to attribute new players to.');
+          return;
+        }
+        systemUserId = admin._id;
+      }
+      await syncPlayers(systemUserId);
+      logger.info('Player auto-sync completed.');
+    } catch (err) {
+      logger.error(`Player auto-sync failed: ${err.message}`);
+    }
+  }
+
+  runOnce();
+  setInterval(runOnce, intervalMs);
+}
+
+module.exports = { syncPlayers, startAutoSync };

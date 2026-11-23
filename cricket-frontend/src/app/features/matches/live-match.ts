@@ -1,7 +1,8 @@
 
 
 import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, finalize, of, switchMap } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
@@ -26,6 +27,8 @@ import { PlayingXIForm } from './live-match/playing-xi-form';
   styleUrl: './live-match.scss',
 })
 export class LiveMatch implements OnDestroy {
+  private location = inject(Location);
+  private router = inject(Router);
   private matchService = inject(MatchService);
   //private teamService = inject(TeamService);
   private socket = inject(SocketService);
@@ -34,6 +37,14 @@ export class LiveMatch implements OnDestroy {
   private route = inject(ActivatedRoute);
 
   private matchId = this.route.snapshot.paramMap.get('id')!;
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/matches/live']);
+    }
+  }
 
   canScore = this.auth.isScorer;
 

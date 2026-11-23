@@ -11,38 +11,43 @@ export interface AppNotification {
 let nextId = 1;
 
 /**
- * Minimal in-memory toast/notification queue. The shell renders whatever's
- * in `notifications()`; this service just owns the array. Auto-dismisses
- * after a few seconds unless `sticky` is passed.
+ * Toast / notification queue. Auto-dismisses after a timeout,
+ * prevents duplicate identical toasts, and allows manual dismissal.
  */
 @Injectable({ providedIn: 'root' })
 export class NotificationService {
   private notificationsSignal = signal<AppNotification[]>([]);
   readonly notifications = this.notificationsSignal.asReadonly();
 
-  show(message: string, type: NotificationType = 'info', durationMs = 4000): void {
-    const notification: AppNotification = { id: nextId++, type, message };
-    this.notificationsSignal.update((list) => [...list, notification]);
+  show(message: string, type: NotificationType = 'info', durationMs = 3500): void {
+    const id = nextId++;
+    const notification: AppNotification = { id, type, message };
+
+    // Deduplicate: replace any existing toast that has the exact same message
+    this.notificationsSignal.update((list) => {
+      const filtered = list.filter((n) => n.message !== message);
+      return [...filtered, notification];
+    });
 
     if (durationMs > 0) {
-      setTimeout(() => this.dismiss(notification.id), durationMs);
+      setTimeout(() => this.dismiss(id), durationMs);
     }
   }
 
   success(message: string): void {
-    this.show(message, 'success');
+    this.show(message, 'success', 3500);
   }
 
   error(message: string): void {
-    this.show(message, 'error', 6000);
+    this.show(message, 'error', 5000);
   }
 
   info(message: string): void {
-    this.show(message, 'info');
+    this.show(message, 'info', 3500);
   }
 
   warning(message: string): void {
-    this.show(message, 'warning', 5000);
+    this.show(message, 'warning', 4000);
   }
 
   dismiss(id: number): void {

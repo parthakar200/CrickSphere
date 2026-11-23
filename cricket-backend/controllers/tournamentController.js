@@ -29,6 +29,7 @@ const createTournament = asyncHandler(async (req, res) => {
     matchType,
     oversPerMatch,
     pointsSystem,
+    locality: req.body.locality || req.user?.locality || req.localityId,
     createdBy: req.user._id,
   });
 
@@ -42,6 +43,7 @@ const getTournaments = asyncHandler(async (req, res) => {
   const filter = {};
   if (req.query.status) filter.status = req.query.status;
   if (req.query.search) filter.$text = { $search: req.query.search };
+  if (req.localityId) filter.locality = req.localityId;
 
   const [tournaments, total] = await Promise.all([
     Tournament.find(filter).sort(sort).skip(skip).limit(limit).populate('teams', 'name shortName logo'),

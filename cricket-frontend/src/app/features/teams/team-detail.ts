@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { TeamService } from '../../core/services/team.service';
@@ -12,10 +13,20 @@ import { TeamRosterPlayer } from '../../core/models';
   styleUrl: './team-detail.scss',
 })
 export class TeamDetail {
+  private location = inject(Location);
+  private router = inject(Router);
   private teamService = inject(TeamService);
   private route = inject(ActivatedRoute);
 
   private teamId = this.route.snapshot.paramMap.get('id')!;
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/teams']);
+    }
+  }
 
   result = toSignal(this.teamService.getById(this.teamId).pipe(catchError(() => of(null))), {
     initialValue: null,

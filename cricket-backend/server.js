@@ -6,9 +6,12 @@ const connectDB = require('./config/db');
 const { port, clientUrl } = require('./config/env');
 const logger = require('./utils/logger');
 const registerLiveScoringHandlers = require('./sockets/liveScoring');
+const { startAutoSync } = require('./services/playerSyncService');
+const { ensureDefaultLocalities } = require('./services/localityService');
 
 async function start() {
   await connectDB();
+  await ensureDefaultLocalities();
 
   const server = http.createServer(app);
 
@@ -24,8 +27,9 @@ async function start() {
   // Make io available to REST controllers (e.g. scoringController emits via req.app.get('io'))
   app.set('io', io);
 
-  server.listen(port, () => {
+    server.listen(port, () => {
     logger.info(`Cricket backend listening on port ${port}`);
+    startAutoSync(); // polls the auction app for new players every 10 minutes
   });
 
   const shutdown = (signal) => {

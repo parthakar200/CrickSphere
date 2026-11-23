@@ -4,7 +4,7 @@ const router = express.Router();
 
 const teamController = require('../controllers/teamController');
 const squadController = require('../controllers/tournamentSquadController');
-const { authenticate, authorize } = require('../middleware/auth');
+const { authenticate, authorize, optionalAuthenticate } = require('../middleware/auth');
 const validate = require('../middleware/validate');
 const { createTeamValidator, updateTeamValidator, idParamValidator } = require('../validators/teamValidator');
 const {
@@ -13,22 +13,21 @@ const {
   removeFromSquadValidator,
 } = require('../validators/tournamentSquadValidator');
 
-router.use(authenticate);
+// Public viewer / spectator read routes
+router.get('/', optionalAuthenticate, teamController.getTeams);
+router.get('/:id', optionalAuthenticate, idParamValidator, validate, teamController.getTeamById);
+router.get('/:id/squad', optionalAuthenticate, squadParamValidator, validate, squadController.getSquad);
+router.get('/:id/squad/taken', optionalAuthenticate, squadParamValidator, validate, squadController.getTournamentTakenPlayers);
 
-router.get('/', teamController.getTeams);
-router.get('/:id', idParamValidator, validate, teamController.getTeamById);
+// Protected admin routes
+router.post('/', authenticate, authorize('admin'), createTeamValidator, validate, teamController.createTeam);
+router.patch('/:id', authenticate, authorize('admin'), updateTeamValidator, validate, teamController.updateTeam);
+router.delete('/:id', authenticate, authorize('admin'), idParamValidator, validate, teamController.deleteTeam);
 
-router.post('/', authorize('admin'), createTeamValidator, validate, teamController.createTeam);
-router.patch('/:id', authorize('admin'), updateTeamValidator, validate, teamController.updateTeam);
-router.delete('/:id', authorize('admin'), idParamValidator, validate, teamController.deleteTeam);
-
-// Squad management — only meaningful for tournament-scoped teams (team.tournament != null).
-// Standalone teams (used in single matches) have no squad; see tournamentSquadController.js.
-router.get('/:id/squad', squadParamValidator, validate, squadController.getSquad);
-router.get('/:id/squad/taken', squadParamValidator, validate, squadController.getTournamentTakenPlayers);
-router.post('/:id/squad', authorize('admin'), addToSquadValidator, validate, squadController.addToSquad);
+router.post('/:id/squad', authenticate, authorize('admin'), addToSquadValidator, validate, squadController.addToSquad);
 router.delete(
   '/:id/squad/:playerId',
+  authenticate,
   authorize('admin'),
   removeFromSquadValidator,
   validate,

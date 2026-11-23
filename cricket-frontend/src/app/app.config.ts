@@ -12,6 +12,7 @@ import { provideStoreDevtools } from '@ngrx/store-devtools';
 
 import { routes } from './app.routes';
 import { authInterceptor } from './core/interceptors/auth.interceptor';
+import { localityInterceptor } from './core/interceptors/locality.interceptor';
 import { authRefreshInterceptor } from './core/interceptors/auth-refresh.interceptor';
 import { errorNotificationInterceptor } from './core/interceptors/error-notification.interceptor';
 import { uiReducer, uiFeatureKey } from './state/ui/ui.state';
@@ -24,7 +25,7 @@ export const appConfig: ApplicationConfig = {
     provideRouter(routes, withComponentInputBinding()),
     provideAnimationsAsync(),
     provideHttpClient(
-      withInterceptors([authInterceptor, authRefreshInterceptor, errorNotificationInterceptor])
+      withInterceptors([localityInterceptor, authInterceptor, authRefreshInterceptor, errorNotificationInterceptor])
     ),
     provideStore({ [uiFeatureKey]: uiReducer }),
     provideEffects(),

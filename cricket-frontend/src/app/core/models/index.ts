@@ -1,3 +1,4 @@
+export * from './locality.model';
 export * from './user.model';
 export * from './player.model';
 export * from './match.model';

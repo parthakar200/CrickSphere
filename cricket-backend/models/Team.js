@@ -12,13 +12,14 @@ const teamSchema = new Schema(
     captain: { type: Schema.Types.ObjectId, ref: 'Player', default: null },
     // Tournament this team instance belongs to. null => a standalone/global team usable in single matches.
     tournament: { type: Schema.Types.ObjectId, ref: 'Tournament', default: null, index: true },
+    locality: { type: Schema.Types.ObjectId, ref: 'Locality', default: null, index: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     isActive: { type: Boolean, default: true },
   },
   { timestamps: true }
 );
 
-teamSchema.index({ name: 1, tournament: 1 }, { unique: true });
-teamSchema.index({ shortName: 1, tournament: 1 });
+teamSchema.index({ name: 1, locality: 1, tournament: 1 }, { unique: true });
+teamSchema.index({ shortName: 1, locality: 1, tournament: 1 });
 
 module.exports = mongoose.model('Team', teamSchema);

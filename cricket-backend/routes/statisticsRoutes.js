@@ -2,13 +2,12 @@ const express = require('express');
 const router = express.Router();
 
 const statisticsController = require('../controllers/statisticsController');
-const { authenticate } = require('../middleware/auth');
+const { optionalAuthenticate } = require('../middleware/auth');
 
-router.use(authenticate);
-
-router.get('/overview', statisticsController.getOverview);
-router.get('/batting-analytics', statisticsController.getBattingAnalytics);
-router.get('/bowling-analytics', statisticsController.getBowlingAnalytics);
-router.get('/team-analytics', statisticsController.getTeamAnalytics);
+// Public viewer / spectator statistics routes
+router.get('/overview', optionalAuthenticate, statisticsController.getOverview);
+router.get('/batting-analytics', optionalAuthenticate, statisticsController.getBattingAnalytics);
+router.get('/bowling-analytics', optionalAuthenticate, statisticsController.getBowlingAnalytics);
+router.get('/team-analytics', optionalAuthenticate, statisticsController.getTeamAnalytics);
 
 module.exports = router;

@@ -40,9 +40,22 @@ const createMatch = asyncHandler(async (req, res) => {
     ballsPerOver: ballsPerOver || 6,
     venue,
     scheduledAt,
+    locality: req.body.locality || req.user?.locality || req.localityId,
     createdBy: req.user._id,
     scorers: [req.user._id],
   });
+
+  if (mode === 'tournament' && tournament) {
+    await Tournament.findByIdAndUpdate(tournament, { $addToSet: { teams: { $each: [teamA, teamB] } } });
+    await Team.updateMany({ _id: { $in: [teamA, teamB] }, tournament: null }, { tournament });
+    for (const tid of [teamA, teamB]) {
+      await PointsTable.findOneAndUpdate(
+        { tournament, team: tid },
+        { $setOnInsert: { tournament, team: tid } },
+        { upsert: true }
+      );
+    }
+  }
 
   res.status(201).json({ success: true, data: match });
 });
@@ -56,6 +69,7 @@ const getMatches = asyncHandler(async (req, res) => {
   if (req.query.tournament) filter.tournament = req.query.tournament;
   if (req.query.status) filter.status = req.query.status;
   if (req.query.team) filter.$or = [{ teamA: req.query.team }, { teamB: req.query.team }];
+  if (req.localityId) filter.locality = req.localityId;
 
   const [matches, total] = await Promise.all([
     Match.find(filter)
@@ -123,7 +137,7 @@ const getEligiblePlayers = asyncHandler(async (req, res) => {
     });
   }
 
-  const allActivePlayers = await Player.find({ isActive: true })
+  const allActivePlayers = await Player.find({ isActive: true, ...(req.localityId ? { locality: req.localityId } : {}) })
     .select('name role photo jerseyNumber battingStyle bowlingStyle')
     .sort('name');
 

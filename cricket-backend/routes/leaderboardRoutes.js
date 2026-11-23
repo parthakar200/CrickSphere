@@ -2,18 +2,17 @@ const express = require('express');
 const router = express.Router();
 
 const leaderboardController = require('../controllers/leaderboardController');
-const { authenticate } = require('../middleware/auth');
+const { optionalAuthenticate } = require('../middleware/auth');
 
-router.use(authenticate);
-
-router.get('/most-runs', leaderboardController.mostRuns);
-router.get('/best-strike-rate', leaderboardController.bestStrikeRate);
-router.get('/most-sixes', leaderboardController.mostSixes);
-router.get('/most-fours', leaderboardController.mostFours);
-router.get('/most-wickets', leaderboardController.mostWickets);
-router.get('/best-economy', leaderboardController.bestEconomy);
-router.get('/most-dot-balls', leaderboardController.mostDotBalls);
-router.get('/best-bowling-average', leaderboardController.bestBowlingAverage);
-router.get('/fielding', leaderboardController.fielding);
+// Public viewer / spectator leaderboards
+router.get('/most-runs', optionalAuthenticate, leaderboardController.mostRuns);
+router.get('/best-strike-rate', optionalAuthenticate, leaderboardController.bestStrikeRate);
+router.get('/most-sixes', optionalAuthenticate, leaderboardController.mostSixes);
+router.get('/most-fours', optionalAuthenticate, leaderboardController.mostFours);
+router.get('/most-wickets', optionalAuthenticate, leaderboardController.mostWickets);
+router.get('/best-economy', optionalAuthenticate, leaderboardController.bestEconomy);
+router.get('/most-dot-balls', optionalAuthenticate, leaderboardController.mostDotBalls);
+router.get('/best-bowling-average', optionalAuthenticate, leaderboardController.bestBowlingAverage);
+router.get('/fielding', optionalAuthenticate, leaderboardController.fielding);
 
 module.exports = router;

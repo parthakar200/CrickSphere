@@ -41,13 +41,26 @@ const register = asyncHandler(async (req, res) => {
 
 // POST /api/auth/login
 const login = asyncHandler(async (req, res) => {
-  const { email, password } = req.body;
+  const { email, password, localityId } = req.body;
 
-  const user = await User.findOne({ email }).select('+password');
+  const user = await User.findOne({ email }).select('+password').populate('locality');
   if (!user || !(await user.comparePassword(password))) {
     throw ApiError.unauthorized('Invalid email or password');
   }
   if (!user.isActive) throw ApiError.forbidden('This account has been deactivated');
+
+  if (localityId) {
+    if (user.locality) {
+      const userLocId = String(user.locality._id || user.locality);
+      if (userLocId !== String(localityId)) {
+        const userLocName = user.locality.name ? `"${user.locality.name}"` : 'another village';
+        throw ApiError.forbidden(`This account belongs to ${userLocName}. Please choose your own village to log in.`);
+      }
+    } else {
+      user.locality = localityId;
+      await user.save();
+    }
+  }
 
   const accessToken = signAccessToken(user);
   const refreshToken = signRefreshToken(user);
@@ -116,7 +129,8 @@ const logout = asyncHandler(async (req, res) => {
 
 // GET /api/auth/me
 const getMe = asyncHandler(async (req, res) => {
-  res.json({ success: true, data: { user: req.user.toSafeObject() } });
+  const user = await User.findById(req.user._id).populate('locality');
+  res.json({ success: true, data: { user: (user || req.user).toSafeObject() } });
 });
 
 module.exports = { register, login, refresh, logout, getMe };

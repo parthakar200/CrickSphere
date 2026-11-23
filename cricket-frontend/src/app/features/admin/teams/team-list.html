@@ -5,55 +5,204 @@
   </a>
 </div>
 
+<!-- Tab switcher -->
+<div class="admin-tabs">
+  <button
+    type="button"
+    class="admin-tab"
+    [class.admin-tab--active]="activeTab() === 'all'"
+    (click)="activeTab.set('all')"
+  >
+    <span class="material-icons">groups</span>
+    All Teams
+    <span class="admin-tab__count">{{ teams().length }}</span>
+  </button>
+  <button
+    type="button"
+    class="admin-tab"
+    [class.admin-tab--active]="activeTab() === 'tournament'"
+    (click)="activeTab.set('tournament')"
+  >
+    <span class="material-icons">emoji_events</span>
+    Tournament Teams
+    <span class="admin-tab__count">{{ tournamentTeams().length }}</span>
+  </button>
+  <button
+    type="button"
+    class="admin-tab"
+    [class.admin-tab--active]="activeTab() === 'standalone'"
+    (click)="activeTab.set('standalone')"
+  >
+    <span class="material-icons">sports_cricket</span>
+    Standalone Teams
+    <span class="admin-tab__count">{{ standaloneTeams().length }}</span>
+  </button>
+</div>
+
 @if (teams().length === 0) {
   <div class="admin-empty">
     <span class="material-icons">groups</span>
     <p>No teams yet. Create your first team to get started.</p>
   </div>
 } @else {
-  <div class="admin-table-wrap">
-    <table class="admin-table">
-      <thead>
-        <tr>
-          <th>Name</th>
-          <th>Short name</th>
-          <th>Home ground</th>
-          <th>Squad</th>
-          <th>Status</th>
-          <th></th>
-        </tr>
-      </thead>
-      <tbody>
-        @for (team of teams(); track team._id) {
-          <tr>
-            <td>{{ team.name }}</td>
-            <td>{{ team.shortName }}</td>
-            <td>{{ team.homeGround || '—' }}</td>
-            <td>
-              @if (team.tournament) {
-                <a [routerLink]="['/admin/teams', team._id, 'squad']" class="team-squad__manage-link">Manage squad</a>
-              } @else {
-                <span class="team-squad__na">— (standalone)</span>
+
+  <!-- ── Section 1: Tournament Teams ── -->
+  @if (activeTab() === 'all' || activeTab() === 'tournament') {
+    <section class="admin-section">
+      <div class="admin-section__header">
+        <div class="admin-section__title-wrap">
+          <h3 class="admin-section__title">
+            <span class="material-icons">emoji_events</span>
+            Tournament Teams
+            <span class="admin-section__count">{{ tournamentTeams().length }}</span>
+          </h3>
+          <p class="admin-section__subtitle">
+            Teams enrolled in a tournament. Players are bound to these teams via their tournament squad.
+          </p>
+        </div>
+      </div>
+
+      @if (tournamentTeams().length === 0) {
+        <div class="admin-empty admin-empty--card">
+          <span class="material-icons">emoji_events</span>
+          <p>No tournament teams yet. Create a team linked to a tournament to bind players.</p>
+        </div>
+      } @else {
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Short name</th>
+                <th>Tournament</th>
+                <th>Home ground</th>
+                <th>Squad</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (team of tournamentTeams(); track team._id) {
+                <tr>
+                  <td>
+                    <strong>{{ team.name }}</strong>
+                  </td>
+                  <td>{{ team.shortName }}</td>
+                  <td>
+                    <span class="admin-table__badge admin-table__badge--purple">
+                      {{ getTournamentName(team) }}
+                    </span>
+                  </td>
+                  <td>{{ team.homeGround || '—' }}</td>
+                  <td>
+                    <a [routerLink]="['/admin/teams', team._id, 'squad']" class="team-squad__manage-link">
+                      <span class="material-icons" style="font-size: 14px; vertical-align: -2px;">group_add</span>
+                      Manage squad
+                    </a>
+                  </td>
+                  <td>
+                    <span class="admin-table__badge" [class.admin-table__badge--crimson]="!team.isActive">
+                      {{ team.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="admin-table__actions">
+                      <a [routerLink]="['/admin/teams', team._id, 'edit']" class="admin-table__icon-btn" title="Edit">
+                        <span class="material-icons">edit</span>
+                      </a>
+                      <button
+                        type="button"
+                        class="admin-table__icon-btn admin-table__icon-btn--danger"
+                        title="Delete"
+                        (click)="deleteTeam(team)"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
               }
-            </td>
-            <td>
-              <span class="admin-table__badge" [class.admin-table__badge--crimson]="!team.isActive">
-                {{ team.isActive ? 'Active' : 'Inactive' }}
-              </span>
-            </td>
-            <td>
-              <div class="admin-table__actions">
-                <a [routerLink]="['/admin/teams', team._id, 'edit']" class="admin-table__icon-btn" title="Edit">
-                  <span class="material-icons">edit</span>
-                </a>
-                <button type="button" class="admin-table__icon-btn admin-table__icon-btn--danger" title="Delete" (click)="deleteTeam(team)">
-                  <span class="material-icons">delete</span>
-                </button>
-              </div>
-            </td>
-          </tr>
-        }
-      </tbody>
-    </table>
-  </div>
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
+  <!-- ── Section 2: Standalone Teams ── -->
+  @if (activeTab() === 'all' || activeTab() === 'standalone') {
+    <section class="admin-section">
+      <div class="admin-section__header">
+        <div class="admin-section__title-wrap">
+          <h3 class="admin-section__title">
+            <span class="material-icons">sports_cricket</span>
+            Standalone Teams
+            <span class="admin-section__count">{{ standaloneTeams().length }}</span>
+          </h3>
+          <p class="admin-section__subtitle">
+            Teams for single/friendly matches. Players are not bound to these teams; Playing XI is picked fresh per match.
+          </p>
+        </div>
+      </div>
+
+      @if (standaloneTeams().length === 0) {
+        <div class="admin-empty admin-empty--card">
+          <span class="material-icons">sports_cricket</span>
+          <p>No standalone teams yet. Teams created for Single Match mode will appear here.</p>
+        </div>
+      } @else {
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr>
+                <th>Team</th>
+                <th>Short name</th>
+                <th>Home ground</th>
+                <th>Squad Mode</th>
+                <th>Status</th>
+                <th></th>
+              </tr>
+            </thead>
+            <tbody>
+              @for (team of standaloneTeams(); track team._id) {
+                <tr>
+                  <td>
+                    <strong>{{ team.name }}</strong>
+                  </td>
+                  <td>{{ team.shortName }}</td>
+                  <td>{{ team.homeGround || '—' }}</td>
+                  <td>
+                    <span class="team-squad__na">
+                      — Standalone (no player binding)
+                    </span>
+                  </td>
+                  <td>
+                    <span class="admin-table__badge" [class.admin-table__badge--crimson]="!team.isActive">
+                      {{ team.isActive ? 'Active' : 'Inactive' }}
+                    </span>
+                  </td>
+                  <td>
+                    <div class="admin-table__actions">
+                      <a [routerLink]="['/admin/teams', team._id, 'edit']" class="admin-table__icon-btn" title="Edit">
+                        <span class="material-icons">edit</span>
+                      </a>
+                      <button
+                        type="button"
+                        class="admin-table__icon-btn admin-table__icon-btn--danger"
+                        title="Delete"
+                        (click)="deleteTeam(team)"
+                      >
+                        <span class="material-icons">delete</span>
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              }
+            </tbody>
+          </table>
+        </div>
+      }
+    </section>
+  }
+
 }

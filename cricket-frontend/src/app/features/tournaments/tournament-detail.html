@@ -1,5 +1,10 @@
 @if (tournament(); as t) {
   <div class="tournament-detail">
+    <button type="button" class="page-back-btn" (click)="goBack()">
+      <span class="material-icons">arrow_back</span>
+      <span>Back</span>
+    </button>
+
     <header class="tournament-detail__header card-flat">
       <div class="tournament-detail__icon">
         <span class="material-icons">emoji_events</span>

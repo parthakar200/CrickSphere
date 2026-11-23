@@ -1,20 +1,16 @@
 /**
  * Leaderboard Service
  * -----------------------------------------------------------------------
- * All leaderboards read from CareerStats (the always-current rollup that
- * already combines single + tournament matches), EXCEPT when a tournament
- * filter is supplied — in that case we aggregate directly from the
- * per-match BattingStats/BowlingStats/FieldingStats rows scoped to that
- * tournament, since CareerStats is a global, all-time rollup per player.
+ * Leaderboards read from CareerStats (rolled-up stats) or aggregate
+ * per-match stats when a tournament or locality filter is active.
  * -----------------------------------------------------------------------
  */
 const mongoose = require('mongoose');
 
-const { CareerStats, BattingStats, BowlingStats, FieldingStats } = require('../models');
+const { CareerStats, BattingStats, BowlingStats, FieldingStats, Player, Match } = require('../models');
 
 // Resolves the raw `team` ObjectId (grouped alongside the player) into a
-// small { _id, name, shortName } object nested under player.team, so the
-// frontend never sees a bare id — only a fully resolved team or null.
+// small { _id, name, shortName } object nested under player.team.
 const resolveTeamStages = [
   {
     $lookup: {
@@ -30,16 +26,28 @@ const resolveTeamStages = [
   { $project: { _team: 0, team: 0 } },
 ];
 
-function buildTournamentMatchFilter(tournamentId) {
-  return tournamentId ? { tournament: new mongoose.Types.ObjectId(tournamentId) } : {};
+async function buildMatchFilter(tournamentId, localityId) {
+  const filter = {};
+  if (tournamentId) filter.tournament = new mongoose.Types.ObjectId(tournamentId);
+  if (localityId) {
+    const matchIds = await Match.find({ locality: localityId }).distinct('_id');
+    filter.match = { $in: matchIds };
+  }
+  return filter;
+}
+
+async function getLocalityPlayerIds(localityId) {
+  if (!localityId) return null;
+  return Player.find({ locality: localityId }).distinct('_id');
 }
 
 // ---------------- BATTING ----------------
 
-async function mostRuns({ tournamentId, limit = 50 }) {
-  if (tournamentId) {
+async function mostRuns({ tournamentId, localityId, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BattingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       {
         $group: {
           _id: '$player',
@@ -65,7 +73,6 @@ async function mostRuns({ tournamentId, limit = 50 }) {
     ]);
   }
 
-
   const rows = await CareerStats.find({ 'batting.runs': { $gt: 0 } })
     .sort({ 'batting.runs': -1 })
     .limit(limit)
@@ -74,10 +81,11 @@ async function mostRuns({ tournamentId, limit = 50 }) {
   return rows;
 }
 
-async function bestStrikeRate({ tournamentId, minBalls = 30, limit = 50 }) {
-  if (tournamentId) {
+async function bestStrikeRate({ tournamentId, localityId, minBalls = 30, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BattingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       {
         $group: {
           _id: '$player',
@@ -100,10 +108,11 @@ async function bestStrikeRate({ tournamentId, minBalls = 30, limit = 50 }) {
     .populate('player', 'name photo team');
 }
 
-async function mostSixes({ tournamentId, limit = 50 }) {
-  if (tournamentId) {
+async function mostSixes({ tournamentId, localityId, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BattingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       { $group: { _id: '$player', team: { $last: '$team' }, sixes: { $sum: '$sixes' } } },
       { $sort: { sixes: -1 } },
       { $limit: limit },
@@ -119,10 +128,11 @@ async function mostSixes({ tournamentId, limit = 50 }) {
     .populate('player', 'name photo team');
 }
 
-async function mostFours({ tournamentId, limit = 50 }) {
-  if (tournamentId) {
+async function mostFours({ tournamentId, localityId, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BattingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       { $group: { _id: '$player', team: { $last: '$team' }, fours: { $sum: '$fours' } } },
       { $sort: { fours: -1 } },
       { $limit: limit },
@@ -140,10 +150,11 @@ async function mostFours({ tournamentId, limit = 50 }) {
 
 // ---------------- BOWLING ----------------
 
-async function mostWickets({ tournamentId, limit = 50 }) {
-  if (tournamentId) {
+async function mostWickets({ tournamentId, localityId, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BowlingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       {
         $group: {
           _id: '$player',
@@ -184,12 +195,13 @@ async function mostWickets({ tournamentId, limit = 50 }) {
     .populate('player', 'name photo team');
 }
 
-async function bestEconomy({ tournamentId, minOvers = 4, limit = 50 }) {
+async function bestEconomy({ tournamentId, localityId, minOvers = 4, limit = 50 }) {
   const minBalls = minOvers * 6;
 
-  if (tournamentId) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BowlingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       { $group: { _id: '$player', team: { $last: '$team' }, ballsBowled: { $sum: '$ballsBowled' }, runsConceded: { $sum: '$runsConceded' } } },
       { $match: { ballsBowled: { $gte: minBalls } } },
       {
@@ -212,12 +224,13 @@ async function bestEconomy({ tournamentId, minOvers = 4, limit = 50 }) {
     .populate('player', 'name photo team');
 }
 
-async function mostDotBalls({ tournamentId, minOvers = 0, limit = 50 }) {
+async function mostDotBalls({ tournamentId, localityId, minOvers = 0, limit = 50 }) {
   const minBalls = minOvers * 6;
 
-  if (tournamentId) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BowlingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       { $group: { _id: '$player', team: { $last: '$team' }, ballsBowled: { $sum: '$ballsBowled' }, dotBalls: { $sum: '$dotBalls' } } },
       { $match: { ballsBowled: { $gte: minBalls } } },
       { $sort: { dotBalls: -1 } },
@@ -234,10 +247,11 @@ async function mostDotBalls({ tournamentId, minOvers = 0, limit = 50 }) {
     .populate('player', 'name photo');
 }
 
-async function bestBowlingAverage({ tournamentId, minWickets = 5, limit = 50 }) {
-  if (tournamentId) {
+async function bestBowlingAverage({ tournamentId, localityId, minWickets = 5, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return BowlingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       { $group: { _id: '$player', team: { $last: '$team' }, wickets: { $sum: '$wickets' }, runsConceded: { $sum: '$runsConceded' } } },
       { $match: { wickets: { $gte: minWickets } } },
       { $addFields: { average: { $divide: ['$runsConceded', '$wickets'] } } },
@@ -257,10 +271,11 @@ async function bestBowlingAverage({ tournamentId, minWickets = 5, limit = 50 }) 
 
 // ---------------- FIELDING ----------------
 
-async function fieldingLeaderboard({ tournamentId, type, limit = 50 }) {
-  if (tournamentId) {
+async function fieldingLeaderboard({ tournamentId, localityId, type, limit = 50 }) {
+  if (tournamentId || localityId) {
+    const matchFilter = await buildMatchFilter(tournamentId, localityId);
     return FieldingStats.aggregate([
-      { $match: buildTournamentMatchFilter(tournamentId) },
+      { $match: matchFilter },
       {
         $group: {
           _id: '$player',

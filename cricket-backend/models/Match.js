@@ -131,6 +131,7 @@ const matchSchema = new Schema(
       playerOfTheMatch: { type: Schema.Types.ObjectId, ref: 'Player', default: null },
     },
 
+    locality: { type: Schema.Types.ObjectId, ref: 'Locality', default: null, index: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     scorers: [{ type: Schema.Types.ObjectId, ref: 'User' }],
   },

@@ -1,5 +1,5 @@
-import { Component, inject, signal } from '@angular/core';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { Component, inject, signal, computed } from '@angular/core';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, finalize, of } from 'rxjs';
@@ -7,7 +7,7 @@ import { MatchService } from '../../../core/services/match.service';
 import { TeamService } from '../../../core/services/team.service';
 import { TournamentService } from '../../../core/services/tournament.service';
 import { NotificationService } from '../../../core/services/notification.service';
-import { MatchMode, MatchType } from '../../../core/models';
+import { MatchMode, MatchType, Team } from '../../../core/models';
 
 const MATCH_TYPES: MatchType[] = ['T20', 'ODI', 'Test', 'Custom'];
 
@@ -18,9 +18,22 @@ const DEFAULT_OVERS_BY_TYPE: Record<MatchType, number> = {
   Custom: 20,
 };
 
+/** Minimal inline team-creation form state for Team A / Team B */
+interface InlineTeamForm {
+  name: string;
+  shortName: string;
+  homeGround: string;
+  loading: boolean;
+  error: string;
+}
+
+function blankInlineTeam(): InlineTeamForm {
+  return { name: '', shortName: '', homeGround: '', loading: false, error: '' };
+}
+
 @Component({
   selector: 'app-match-form',
-  imports: [ReactiveFormsModule, RouterLink],
+  imports: [ReactiveFormsModule, FormsModule, RouterLink],
   templateUrl: './match-form.html',
   styleUrl: '../admin-shared.scss',
 })
@@ -35,15 +48,119 @@ export class MatchForm {
   loading = signal(false);
   matchTypes = MATCH_TYPES;
 
-  private allTeamsResult = toSignal(this.teamService.list({ limit: 100 }).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
-  private allTournamentsResult = toSignal(
-    this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))),
-    { initialValue: null }
-  );
-  tournaments = () => this.allTournamentsResult()?.data ?? [];
+  /** Mutable local list of teams — starts from the server load, grows as inline teams are created */
+  allTeams = signal<Team[]>([]);
 
+  private _teamsLoaded = signal(false);
+
+  constructor() {
+    // Load all teams once and seed the mutable signal
+    this.teamService.list({ limit: 200 }).pipe(catchError(() => of(null))).subscribe((res) => {
+      this.allTeams.set(res?.data ?? []);
+      this._teamsLoaded.set(true);
+    });
+
+    // Load tournaments
+    this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))).subscribe((res) => {
+      this._tournaments.set(res?.data ?? []);
+    });
+  }
+
+  private _tournaments = signal<any[]>([]);
+  tournaments = computed(() => this._tournaments());
+
+  // ── Inline "quick-add team" panels ──────────────────────────────────────
+  showInlineTeamA = signal(false);
+  showInlineTeamB = signal(false);
+  inlineTeamA = signal<InlineTeamForm>(blankInlineTeam());
+  inlineTeamB = signal<InlineTeamForm>(blankInlineTeam());
+
+  toggleInlineTeam(slot: 'A' | 'B'): void {
+    if (slot === 'A') {
+      this.showInlineTeamA.update((v) => !v);
+      if (!this.showInlineTeamA()) this.inlineTeamA.set(blankInlineTeam());
+    } else {
+      this.showInlineTeamB.update((v) => !v);
+      if (!this.showInlineTeamB()) this.inlineTeamB.set(blankInlineTeam());
+    }
+  }
+
+  updateInlineTeam(slot: 'A' | 'B', patch: Partial<InlineTeamForm>): void {
+    if (slot === 'A') this.inlineTeamA.update((f) => ({ ...f, ...patch }));
+    else this.inlineTeamB.update((f) => ({ ...f, ...patch }));
+  }
+
+  createInlineTeam(slot: 'A' | 'B'): void {
+    const form = slot === 'A' ? this.inlineTeamA() : this.inlineTeamB();
+    if (!form.name.trim() || !form.shortName.trim()) {
+      this.updateInlineTeam(slot, { error: 'Team name and short name are required.' });
+      return;
+    }
+    if (form.shortName.trim().length > 6) {
+      this.updateInlineTeam(slot, { error: 'Short name must be 6 characters or fewer.' });
+      return;
+    }
+
+    const isTournament = this.form.controls.mode.value === 'tournament';
+    const tournamentId = isTournament ? (this.form.controls.tournament.value || null) : null;
+
+    if (isTournament && !tournamentId) {
+      this.updateInlineTeam(slot, {
+        error: 'Please select a tournament above first before creating a team for it.',
+      });
+      return;
+    }
+
+    this.updateInlineTeam(slot, { loading: true, error: '' });
+    this.teamService.create({
+      name: form.name.trim(),
+      shortName: form.shortName.trim().toUpperCase(),
+      homeGround: form.homeGround.trim() || undefined,
+      tournament: tournamentId || undefined,
+    }).subscribe({
+      next: (res) => {
+        const newTeam = res.data;
+        // Add to local team list so it appears in dropdowns immediately and in teams section
+        this.allTeams.update((teams) => [...teams, newTeam]);
+
+        // If tournament was selected, also update local tournament data
+        if (tournamentId) {
+          this._tournaments.update((tournaments) =>
+            tournaments.map((t) => {
+              if (t._id === tournamentId) {
+                const teams = Array.isArray(t.teams) ? [...t.teams, newTeam._id] : [newTeam._id];
+                return { ...t, teams };
+              }
+              return t;
+            })
+          );
+        }
+
+        // Auto-select the new team in the right slot
+        if (slot === 'A') {
+          this.form.patchValue({ teamA: newTeam._id });
+          this.showInlineTeamA.set(false);
+          this.inlineTeamA.set(blankInlineTeam());
+        } else {
+          this.form.patchValue({ teamB: newTeam._id });
+          this.showInlineTeamB.set(false);
+          this.inlineTeamB.set(blankInlineTeam());
+        }
+
+        if (isTournament) {
+          this.notifications.success(`Team "${newTeam.name}" created and added to tournament. You can bind players in Teams section.`);
+        } else {
+          this.notifications.success(`Team "${newTeam.name}" created as standalone team (single match — players are not bound).`);
+        }
+      },
+      error: (err) => {
+        const msg = err?.error?.message ?? 'Failed to create team. Please try again.';
+        this.updateInlineTeam(slot, { loading: false, error: msg });
+      },
+    });
+  }
+
+  // ── Main match form ──────────────────────────────────────────────────────
   form = this.fb.nonNullable.group({
     name: ['', [Validators.required, Validators.maxLength(150)]],
     mode: ['single' as MatchMode, [Validators.required]],
@@ -55,10 +172,6 @@ export class MatchForm {
     venue: [''],
   });
 
-  // Tracked as signals (rather than reading form.controls.mode.value directly
-  // in a template-bound method) so `availableTeams` below is correctly
-  // reactive to every mode/tournament change, not dependent on some other
-  // change-detection pass happening to re-run it afterward.
   private selectedMode = toSignal(this.form.controls.mode.valueChanges, {
     initialValue: this.form.controls.mode.value,
   });
@@ -66,31 +179,41 @@ export class MatchForm {
     initialValue: this.form.controls.tournament.value,
   });
 
-  /**
-   * Team pool is filtered to the selected tournament's teams when mode is
-   * 'tournament' (a match between teams that aren't actually IN that
-   * tournament wouldn't make sense), and shows every team otherwise.
-   */
-  availableTeams = () => {
-    const mode = this.selectedMode();
-    const tournamentId = this.selectedTournamentId();
-    const allTeams = this.allTeamsResult()?.data ?? [];
+  isTournamentMode = computed(() => this.selectedMode() === 'tournament');
 
-    if (mode !== 'tournament' || !tournamentId) return allTeams;
+  /**
+   * For tournament mode: teams enrolled in this tournament
+   */
+  tournamentTeams = computed(() => {
+    const tournamentId = this.selectedTournamentId();
+    if (!tournamentId) return [];
 
     const tournament = this.tournaments().find((t) => t._id === tournamentId);
-    if (!tournament) return allTeams;
+    if (!tournament) return [];
 
-    const tournamentTeamIds = new Set(tournament.teams.map((t) => (typeof t === 'string' ? t : t._id)));
-    return allTeams.filter((t) => tournamentTeamIds.has(t._id));
-  };
+    const tournamentTeamIds = new Set((tournament.teams || []).map((t: any) => (typeof t === 'string' ? t : t._id)));
+    return this.allTeams().filter((t) => tournamentTeamIds.has(t._id));
+  });
+
+  /**
+   * For tournament mode: teams not yet enrolled in this tournament
+   */
+  otherTeams = computed(() => {
+    const tournamentId = this.selectedTournamentId();
+    if (!tournamentId) return this.allTeams();
+
+    const tournament = this.tournaments().find((t) => t._id === tournamentId);
+    if (!tournament) return this.allTeams();
+
+    const tournamentTeamIds = new Set((tournament.teams || []).map((t: any) => (typeof t === 'string' ? t : t._id)));
+    return this.allTeams().filter((t) => !tournamentTeamIds.has(t._id));
+  });
 
   onModeChange(mode: MatchMode): void {
     this.form.patchValue({ mode });
     if (mode === 'single') {
       this.form.patchValue({ tournament: '' });
     }
-    // Re-validate team selections since the available pool may have changed.
     this.form.patchValue({ teamA: '', teamB: '' });
   }
 
@@ -123,8 +246,12 @@ export class MatchForm {
       .create(payload)
       .pipe(finalize(() => this.loading.set(false)))
       .subscribe({
-        next: () => {
-          this.notifications.success('Match created');
+        next: (res) => {
+          const isTournament = raw.mode === 'tournament';
+          this.notifications.success('Match created successfully');
+          if (isTournament) {
+            this.notifications.info('For tournament matches, you can bind players to squads via Admin > Teams > Manage squad');
+          }
           this.router.navigateByUrl('/admin/matches');
         },
         error: () => undefined,

@@ -20,6 +20,7 @@ const userSchema = new Schema(
     },
     password: { type: String, required: true, minlength: 8, select: false },
     role: { type: String, enum: ROLES, default: 'viewer', index: true },
+    locality: { type: Schema.Types.ObjectId, ref: 'Locality', default: null, index: true },
     avatar: { type: String, default: null },
     isActive: { type: Boolean, default: true },
     lastLogin: { type: Date, default: null },

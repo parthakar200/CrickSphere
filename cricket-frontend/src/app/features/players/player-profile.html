@@ -1,5 +1,10 @@
 @if (player(); as p) {
   <div class="player-profile">
+    <button type="button" class="page-back-btn" (click)="goBack()">
+      <span class="material-icons">arrow_back</span>
+      <span>Back</span>
+    </button>
+
     <header class="player-profile__header card-flat">
       @if(p.photo == null){
         <div class="player-profile__avatar">{{ p.name.charAt(0) }}</div>

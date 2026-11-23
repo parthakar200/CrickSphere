@@ -1,0 +1,174 @@
+<section class="search-page">
+
+  <div class="search-page__header">
+    <h1 class="search-page__title">
+      @if (query()) {
+        Results for <span class="search-page__query">"{{ query() }}"</span>
+      } @else {
+        Search CrickSphere
+      }
+    </h1>
+    @if (results() && !loading()) {
+      <p class="search-page__meta">{{ totalCount }} result{{ totalCount !== 1 ? 's' : '' }} found</p>
+    }
+  </div>
+
+  <!-- Loading -->
+  @if (loading()) {
+    <div class="search-page__loading">
+      <div class="spinner"></div>
+      <span>Searching...</span>
+    </div>
+  }
+
+  <!-- Error -->
+  @if (error()) {
+    <div class="search-page__error">
+      <span class="material-icons">error_outline</span>
+      {{ error() }}
+    </div>
+  }
+
+  <!-- Empty state -->
+  @if (!loading() && !error() && query().length >= 2 && totalCount === 0 && results()) {
+    <div class="search-page__empty">
+      <span class="material-icons">search_off</span>
+      <p>No results for <strong>"{{ query() }}"</strong></p>
+      <p class="search-page__empty-hint">Try a different name or spelling.</p>
+    </div>
+  }
+
+  <!-- Prompt -->
+  @if (!loading() && !error() && query().length < 2) {
+    <div class="search-page__empty">
+      <span class="material-icons">manage_search</span>
+      <p>Type at least 2 characters in the search bar above to find players, teams, tournaments, and matches.</p>
+    </div>
+  }
+
+  <!-- Results -->
+  @if (!loading() && results()) {
+
+    <!-- Players -->
+    @if ((results()?.players?.length ?? 0) > 0) {
+      <div class="search-section">
+        <h2 class="search-section__title">
+          <span class="material-icons">sports_cricket</span> Players
+          <span class="search-section__count">{{ results()?.players?.length }}</span>
+        </h2>
+        <div class="search-grid">
+          @for (player of results()?.players ?? []; track player._id) {
+            <a [routerLink]="['/players', player._id]" class="search-card search-card--player">
+              <div class="search-card__avatar">
+                @if (player.photo) {
+                  <img [src]="player.photo" [alt]="player.name" />
+                } @else {
+                  <span class="material-icons">{{ roleIcon(player.role) }}</span>
+                }
+              </div>
+              <div class="search-card__info">
+                <div class="search-card__name">{{ player.name }}</div>
+                <div class="search-card__sub">
+                  <span class="badge badge--role">{{ player.role }}</span>
+                  @if (player.team) {
+                    <span class="search-card__team">{{ teamShort(player.team) }}</span>
+                  }
+                </div>
+              </div>
+              <span class="material-icons search-card__arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Teams -->
+    @if ((results()?.teams?.length ?? 0) > 0) {
+      <div class="search-section">
+        <h2 class="search-section__title">
+          <span class="material-icons">groups</span> Teams
+          <span class="search-section__count">{{ results()?.teams?.length }}</span>
+        </h2>
+        <div class="search-grid">
+          @for (team of results()?.teams ?? []; track team._id) {
+            <a [routerLink]="['/teams', team._id]" class="search-card search-card--team">
+              <div class="search-card__avatar search-card__avatar--team">
+                @if (team.logo) {
+                  <img [src]="team.logo" [alt]="team.name" />
+                } @else {
+                  <span class="material-icons">shield</span>
+                }
+              </div>
+              <div class="search-card__info">
+                <div class="search-card__name">{{ team.name }}</div>
+                <div class="search-card__sub">
+                  <span class="badge badge--neutral">{{ team.shortName }}</span>
+                </div>
+              </div>
+              <span class="material-icons search-card__arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Tournaments -->
+    @if ((results()?.tournaments?.length ?? 0) > 0) {
+      <div class="search-section">
+        <h2 class="search-section__title">
+          <span class="material-icons">emoji_events</span> Tournaments
+          <span class="search-section__count">{{ results()?.tournaments?.length }}</span>
+        </h2>
+        <div class="search-grid">
+          @for (t of results()?.tournaments ?? []; track t._id) {
+            <a [routerLink]="['/tournaments', t._id]" class="search-card search-card--tournament">
+              <div class="search-card__avatar search-card__avatar--tour">
+                @if (t.logo) {
+                  <img [src]="t.logo" [alt]="t.name" />
+                } @else {
+                  <span class="material-icons">emoji_events</span>
+                }
+              </div>
+              <div class="search-card__info">
+                <div class="search-card__name">{{ t.name }}</div>
+                <div class="search-card__sub">
+                  <span class="badge" [class]="statusClass(t.status)">{{ t.status }}</span>
+                </div>
+              </div>
+              <span class="material-icons search-card__arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
+
+    <!-- Matches -->
+    @if ((results()?.matches?.length ?? 0) > 0) {
+      <div class="search-section">
+        <h2 class="search-section__title">
+          <span class="material-icons">scoreboard</span> Matches
+          <span class="search-section__count">{{ results()?.matches?.length }}</span>
+        </h2>
+        <div class="search-grid search-grid--wide">
+          @for (match of results()?.matches ?? []; track match._id) {
+            <a [routerLink]="['/matches', match._id]" class="search-card search-card--match">
+              <div class="search-card__match-teams">
+                <span class="search-card__team-pill">{{ teamShort(match.teamA) }}</span>
+                <span class="search-card__vs">vs</span>
+                <span class="search-card__team-pill">{{ teamShort(match.teamB) }}</span>
+              </div>
+              <div class="search-card__match-meta">
+                <span class="badge" [class]="statusClass(match.status)">{{ match.status }}</span>
+                @if (match.name) {
+                  <span class="search-card__match-name">{{ match.name }}</span>
+                }
+              </div>
+              <span class="material-icons search-card__arrow">chevron_right</span>
+            </a>
+          }
+        </div>
+      </div>
+    }
+  }
+
+</section>

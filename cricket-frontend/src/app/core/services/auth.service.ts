@@ -3,7 +3,8 @@ import { Router } from '@angular/router';
 import { Observable, tap } from 'rxjs';
 import { ApiService } from './api.service';
 import { TokenStorageService } from './token-storage.service';
-import { AuthResponse, LoginPayload, RegisterPayload, User } from '../models';
+import { LocalityService } from './locality.service';
+import { AuthResponse, LoginPayload, RegisterPayload, User, Locality } from '../models';
 import { ApiResponse } from '../models/api.model';
 
 /**
@@ -16,6 +17,7 @@ import { ApiResponse } from '../models/api.model';
 export class AuthService {
   private api = inject(ApiService);
   private tokens = inject(TokenStorageService);
+  private localityService = inject(LocalityService);
   private router = inject(Router);
 
   private currentUserSignal = signal<User | null>(null);
@@ -41,7 +43,10 @@ export class AuthService {
   /** Called once at app start to restore the session from a stored access token, if any. */
   loadCurrentUser(): Observable<ApiResponse<{ user: User }>> {
     return this.api.get<ApiResponse<{ user: User }>>('/auth/me').pipe(
-      tap((res) => this.currentUserSignal.set(res.data.user))
+      tap((res) => {
+        this.currentUserSignal.set(res.data.user);
+        this.syncUserLocality(res.data.user);
+      })
     );
   }
 
@@ -78,8 +83,27 @@ export class AuthService {
     return !!this.tokens.getAccessToken();
   }
 
+  restoreSessionIfPresent(): void {
+    if (this.hasValidSession() && !this.currentUserSignal()) {
+      this.loadCurrentUser().subscribe({
+        next: () => undefined,
+        error: () => this.clearSession(),
+      });
+    }
+  }
+
   private handleAuthSuccess(data: AuthResponse): void {
     this.tokens.setTokens(data.accessToken, data.refreshToken);
     this.currentUserSignal.set(data.user);
+    this.syncUserLocality(data.user);
+  }
+
+  private syncUserLocality(user: User): void {
+    if (!user.locality) return;
+    if (typeof user.locality === 'object' && (user.locality as Locality)._id) {
+      this.localityService.setLocality(user.locality as Locality);
+    } else if (typeof user.locality === 'string') {
+      this.localityService.setLocalityById(user.locality);
+    }
   }
 }

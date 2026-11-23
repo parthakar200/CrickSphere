@@ -33,7 +33,7 @@ export interface Team {
   homeGround?: string | null;
   coach?: string | null;
   captain?: TeamCaptainSummary | string | null;
-  tournament?: string | null;
+  tournament?: string | { _id: string; name: string } | null;
   isActive: boolean;
   createdAt: string;
 }

@@ -19,7 +19,6 @@ export const routes: Routes = [
   },
   {
     path: '',
-    canActivate: [authGuard],
     loadComponent: () => import('./layout/shell/shell').then((m) => m.Shell),
     children: [
       {
@@ -96,16 +95,15 @@ export const routes: Routes = [
         title: 'Leaderboards — CrickSphere',
       },
 
-      // Still placeholders — out of scope for this pass: global search UI
-      // and the user's own account/profile settings (distinct from a
-      // PLAYER profile above, which is cricket data, not account settings).
+      // Search — real implementation
       {
         path: 'search',
-        data: { section: 'search' },
-        loadChildren: () => import('./features/placeholder/placeholder.routes').then((m) => m.PLACEHOLDER_ROUTES),
+        loadComponent: () => import('./features/search/search').then((m) => m.Search),
+        title: 'Search — CrickSphere',
       },
       {
         path: 'profile',
+        canActivate: [authGuard],
         data: { section: 'profile' },
         loadChildren: () => import('./features/placeholder/placeholder.routes').then((m) => m.PLACEHOLDER_ROUTES),
       },

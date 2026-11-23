@@ -35,17 +35,31 @@ export const guestGuard: CanActivateFn = () => {
 
 /**
  * Factory for a role-restricted guard, e.g. `roleGuard(['admin'])` on the
- * admin panel route. Assumes `authGuard` already ran (composed in the route
- * config) so `currentUser()` is populated by the time this checks roles.
+ * admin panel route. If user has a valid session token, it verifies credentials
+ * first before deciding.
  */
 export function roleGuard(allowedRoles: UserRole[]): CanActivateFn {
-  return () => {
+  return (route, state) => {
     const auth = inject(AuthService);
     const router = inject(Router);
 
-    const role = auth.role();
-    if (role && allowedRoles.includes(role)) return true;
+    const checkRole = () => {
+      const role = auth.role();
+      if (role && allowedRoles.includes(role)) return true;
+      return router.createUrlTree(['/auth/login'], { queryParams: { redirectTo: state.url } });
+    };
 
-    return router.createUrlTree(['/dashboard']);
+    if (auth.isAuthenticated()) {
+      return checkRole();
+    }
+
+    if (auth.hasValidSession()) {
+      return auth.loadCurrentUser().pipe(
+        map(() => checkRole()),
+        catchError(() => of(router.createUrlTree(['/auth/login'], { queryParams: { redirectTo: state.url } })))
+      );
+    }
+
+    return router.createUrlTree(['/auth/login'], { queryParams: { redirectTo: state.url } });
   };
 }

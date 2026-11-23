@@ -23,6 +23,7 @@ const tournamentSchema = new Schema(
       loss: { type: Number, default: 0 },
       noResult: { type: Number, default: 1 },
     },
+    locality: { type: Schema.Types.ObjectId, ref: 'Locality', default: null, index: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     isActive: { type: Boolean, default: true },
   },

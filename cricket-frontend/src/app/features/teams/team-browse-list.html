@@ -1,8 +1,42 @@
 <div class="team-browse">
   <header class="team-browse__header">
     <h1 class="font-display">Teams</h1>
-    <p>Browse every team and their current roster.</p>
+    <p>Browse tournament rosters and standalone exhibition clubs.</p>
   </header>
+
+  <!-- Filter tabs -->
+  <div class="team-browse__tabs">
+    <button
+      type="button"
+      class="team-browse__tab"
+      [class.team-browse__tab--active]="activeTab() === 'all'"
+      (click)="activeTab.set('all')"
+    >
+      <span class="material-icons">groups</span>
+      All Teams
+      <span class="team-browse__tab-count">{{ teams().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="team-browse__tab"
+      [class.team-browse__tab--active]="activeTab() === 'tournament'"
+      (click)="activeTab.set('tournament')"
+    >
+      <span class="material-icons">emoji_events</span>
+      Tournament Teams
+      <span class="team-browse__tab-count">{{ tournamentTeams().length }}</span>
+    </button>
+    <button
+      type="button"
+      class="team-browse__tab"
+      [class.team-browse__tab--active]="activeTab() === 'standalone'"
+      (click)="activeTab.set('standalone')"
+    >
+      <span class="material-icons">sports_cricket</span>
+      Standalone Teams
+      <span class="team-browse__tab-count">{{ standaloneTeams().length }}</span>
+    </button>
+  </div>
 
   @if (teams().length === 0) {
     <div class="team-browse__empty">
@@ -10,19 +44,95 @@
       <p>No teams yet.</p>
     </div>
   } @else {
-    <div class="team-browse__grid">
-      @for (team of teams(); track team._id) {
-        <a [routerLink]="['/teams', team._id]" class="team-card card-flat">
-          <div class="team-card__logo">{{ team.shortName.charAt(0) }}</div>
-          <div class="team-card__body">
-            <strong>{{ team.name }}</strong>
-            <span class="team-card__meta">{{ team.shortName }}</span>
-            @if (team.homeGround) {
-              <span class="team-card__ground">{{ team.homeGround }}</span>
+
+    <!-- ── Section 1: Tournament Teams ── -->
+    @if (activeTab() === 'all' || activeTab() === 'tournament') {
+      <section class="team-browse__section">
+        <div class="team-browse__section-header">
+          <div class="team-browse__section-title">
+            <span class="material-icons">emoji_events</span>
+            <h2>Tournament Teams</h2>
+            <span class="team-browse__count-badge">{{ tournamentTeams().length }}</span>
+          </div>
+          <p class="team-browse__section-sub">
+            Teams competing in organized tournaments with registered squads.
+          </p>
+        </div>
+
+        @if (tournamentTeams().length === 0) {
+          <div class="team-browse__empty-card">
+            <span class="material-icons">emoji_events</span>
+            <p>No tournament teams found.</p>
+          </div>
+        } @else {
+          <div class="team-browse__grid">
+            @for (team of tournamentTeams(); track team._id) {
+              <a [routerLink]="['/teams', team._id]" class="team-card card-flat">
+                <div class="team-card__logo">{{ team.shortName.charAt(0) }}</div>
+                <div class="team-card__body">
+                  <div class="team-card__top">
+                    <strong>{{ team.name }}</strong>
+                    <span class="team-card__tag team-card__tag--tournament">
+                      <span class="material-icons">emoji_events</span>
+                      {{ getTournamentName(team) }}
+                    </span>
+                  </div>
+                  <span class="team-card__meta">{{ team.shortName }}</span>
+                  @if (team.homeGround) {
+                    <span class="team-card__ground">{{ team.homeGround }}</span>
+                  }
+                </div>
+              </a>
             }
           </div>
-        </a>
-      }
-    </div>
+        }
+      </section>
+    }
+
+    <!-- ── Section 2: Standalone Teams ── -->
+    @if (activeTab() === 'all' || activeTab() === 'standalone') {
+      <section class="team-browse__section">
+        <div class="team-browse__section-header">
+          <div class="team-browse__section-title">
+            <span class="material-icons">sports_cricket</span>
+            <h2>Standalone Teams</h2>
+            <span class="team-browse__count-badge">{{ standaloneTeams().length }}</span>
+          </div>
+          <p class="team-browse__section-sub">
+            Clubs for single exhibition matches with match-day roster selection.
+          </p>
+        </div>
+
+        @if (standaloneTeams().length === 0) {
+          <div class="team-browse__empty-card">
+            <span class="material-icons">sports_cricket</span>
+            <p>No standalone teams found.</p>
+          </div>
+        } @else {
+          <div class="team-browse__grid">
+            @for (team of standaloneTeams(); track team._id) {
+              <a [routerLink]="['/teams', team._id]" class="team-card card-flat">
+                <div class="team-card__logo team-card__logo--standalone">
+                  {{ team.shortName.charAt(0) }}
+                </div>
+                <div class="team-card__body">
+                  <div class="team-card__top">
+                    <strong>{{ team.name }}</strong>
+                    <span class="team-card__tag team-card__tag--standalone">
+                      Standalone
+                    </span>
+                  </div>
+                  <span class="team-card__meta">{{ team.shortName }}</span>
+                  @if (team.homeGround) {
+                    <span class="team-card__ground">{{ team.homeGround }}</span>
+                  }
+                </div>
+              </a>
+            }
+          </div>
+        }
+      </section>
+    }
+
   }
 </div>

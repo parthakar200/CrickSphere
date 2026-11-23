@@ -27,6 +27,7 @@ const playerSchema = new Schema(
     battingStyle: { type: String, enum: BATTING_STYLES, default: 'right-hand-bat' },
     bowlingStyle: { type: String, enum: BOWLING_STYLES, default: 'none' },
     isActive: { type: Boolean, default: true },
+    locality: { type: Schema.Types.ObjectId, ref: 'Locality', default: null, index: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', required: true },
     auctionPlayerId: { type: String, unique: true, sparse: true, index: true },
   },

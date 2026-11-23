@@ -1,5 +1,6 @@
 import { Component, inject } from '@angular/core';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { Location } from '@angular/common';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -13,11 +14,21 @@ import { Team } from '../../core/models';
   styleUrl: './tournament-detail.scss',
 })
 export class TournamentDetail {
+  private location = inject(Location);
+  private router = inject(Router);
   private tournamentService = inject(TournamentService);
   private matchService = inject(MatchService);
   private route = inject(ActivatedRoute);
 
   private tournamentId = this.route.snapshot.paramMap.get('id')!;
+
+  goBack(): void {
+    if (window.history.length > 1) {
+      this.location.back();
+    } else {
+      this.router.navigate(['/tournaments']);
+    }
+  }
 
   tournamentResult = toSignal(this.tournamentService.getById(this.tournamentId).pipe(catchError(() => of(null))), {
     initialValue: null,

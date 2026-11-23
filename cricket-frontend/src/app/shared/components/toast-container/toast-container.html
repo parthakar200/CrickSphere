@@ -1,9 +1,20 @@
 <div class="toast-stack">
   @for (toast of toasts(); track toast.id) {
-    <div class="toast" [class]="'toast--' + toast.type" role="alert">
+    <div
+      class="toast"
+      [class]="'toast--' + toast.type"
+      role="alert"
+      (click)="dismiss(toast.id)"
+      title="Click to dismiss"
+    >
       <span class="material-icons toast__icon">{{ iconFor(toast.type) }}</span>
       <span class="toast__message">{{ toast.message }}</span>
-      <button type="button" class="toast__close" (click)="dismiss(toast.id)" aria-label="Dismiss">
+      <button
+        type="button"
+        class="toast__close"
+        (click)="onCloseClick($event, toast.id)"
+        aria-label="Dismiss notification"
+      >
         <span class="material-icons">close</span>
       </button>
     </div>

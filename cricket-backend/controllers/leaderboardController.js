@@ -10,6 +10,7 @@ function getCommonParams(req) {
   return {
     tournamentId: req.query.tournament || null,
     limit: Math.min(parseInt(req.query.limit, 10) || 50, 200),
+    localityId: req.localityId || null,
   };
 }
 

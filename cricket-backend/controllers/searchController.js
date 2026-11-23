@@ -10,19 +10,20 @@ const search = asyncHandler(async (req, res) => {
   }
 
   const regex = { $regex: q, $options: 'i' };
+  const locFilter = req.localityId ? { locality: req.localityId } : {};
   const results = {};
 
   if (!type || type === 'player') {
-    results.players = await Player.find({ name: regex }).select('name role photo team').limit(10).populate('team', 'name shortName');
+    results.players = await Player.find({ name: regex, ...locFilter }).select('name role photo').limit(10);
   }
   if (!type || type === 'team') {
-    results.teams = await Team.find({ name: regex }).select('name shortName logo').limit(10);
+    results.teams = await Team.find({ name: regex, ...locFilter }).select('name shortName logo').limit(10);
   }
   if (!type || type === 'tournament') {
-    results.tournaments = await Tournament.find({ name: regex }).select('name logo status startDate').limit(10);
+    results.tournaments = await Tournament.find({ name: regex, ...locFilter }).select('name logo status startDate').limit(10);
   }
   if (!type || type === 'match') {
-    results.matches = await Match.find({ name: regex })
+    results.matches = await Match.find({ name: regex, ...locFilter })
       .select('name teamA teamB status scheduledAt')
       .populate('teamA', 'name shortName')
       .populate('teamB', 'name shortName')

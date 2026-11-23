@@ -4,24 +4,73 @@
     <p>Points tables, schedules, and results for every tournament.</p>
   </header>
 
-  @if (tournaments().length === 0) {
-    <div class="tournament-browse__empty">
+  <!-- Separate tabs for Upcoming / Ongoing, Completed, and All Tournaments -->
+  <div class="tournament-browse__tabs">
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="activeTab() === 'upcoming'"
+      (click)="activeTab.set('upcoming')"
+    >
+      <span class="material-icons tab-icon">schedule</span>
+      <span>Upcoming & Ongoing</span>
+      <span class="tab-badge">{{ upcomingTournaments().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="activeTab() === 'completed'"
+      (click)="activeTab.set('completed')"
+    >
+      <span class="material-icons tab-icon">emoji_events</span>
+      <span>Completed</span>
+      <span class="tab-badge">{{ completedTournaments().length }}</span>
+    </button>
+
+    <button
+      type="button"
+      class="tab-pill"
+      [class.tab-pill--active]="activeTab() === 'all'"
+      (click)="activeTab.set('all')"
+    >
+      <span>All Tournaments</span>
+      <span class="tab-badge">{{ tournaments().length }}</span>
+    </button>
+  </div>
+
+  @if (displayedTournaments().length === 0) {
+    <div class="tournament-browse__empty card-flat">
       <span class="material-icons">emoji_events</span>
-      <p>No tournaments yet.</p>
+      <p>
+        @if (activeTab() === 'upcoming') {
+          No upcoming or ongoing tournaments right now.
+        } @else if (activeTab() === 'completed') {
+          No completed tournaments found for this village.
+        } @else {
+          No tournaments registered yet.
+        }
+      </p>
     </div>
   } @else {
     <div class="tournament-browse__grid">
-      @for (tournament of tournaments(); track tournament._id) {
+      @for (tournament of displayedTournaments(); track tournament._id) {
         <a [routerLink]="['/tournaments', tournament._id]" class="tournament-card card-flat">
           <div class="tournament-card__icon">
             <span class="material-icons">emoji_events</span>
           </div>
           <div class="tournament-card__body">
             <strong>{{ tournament.name }}</strong>
-            <span class="tournament-card__meta">{{ tournament.format }} · {{ tournament.matchType }} · {{ teamCount(tournament) }} teams</span>
-            <span class="tournament-card__dates font-mono">{{ tournament.startDate | date: 'mediumDate' }} - {{ tournament.endDate | date: 'mediumDate' }}</span>
+            <span class="tournament-card__meta">
+              {{ tournament.format }} · {{ tournament.matchType }} · {{ teamCount(tournament) }} teams
+            </span>
+            <span class="tournament-card__dates font-mono">
+              {{ tournament.startDate | date: 'mediumDate' }} - {{ tournament.endDate | date: 'mediumDate' }}
+            </span>
           </div>
-          <span class="tournament-card__badge" [class]="statusBadgeClass(tournament.status)">{{ tournament.status }}</span>
+          <span class="tournament-card__badge" [class]="statusBadgeClass(tournament.status)">
+            {{ tournament.status }}
+          </span>
         </a>
       }
     </div>

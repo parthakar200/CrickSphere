@@ -1,5 +1,5 @@
 
-const { Team, Tournament } = require('../models');
+const { Team, Tournament, PointsTable } = require('../models');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 const { parseQueryOptions, buildPaginatedResponse } = require('../utils/queryHelpers');
@@ -20,11 +20,17 @@ const createTeam = asyncHandler(async (req, res) => {
     homeGround,
     coach,
     tournament: tournament || null,
+    locality: req.body.locality || req.user?.locality || req.localityId,
     createdBy: req.user._id,
   });
 
   if (tournament) {
     await Tournament.findByIdAndUpdate(tournament, { $addToSet: { teams: team._id } });
+    await PointsTable.findOneAndUpdate(
+      { tournament, team: team._id },
+      { $setOnInsert: { tournament, team: team._id } },
+      { upsert: true }
+    );
   }
 
   res.status(201).json({ success: true, data: team });
@@ -38,6 +44,7 @@ const getTeams = asyncHandler(async (req, res) => {
   if (req.query.tournament) filter.tournament = req.query.tournament;
   if (req.query.search) filter.name = { $regex: req.query.search, $options: 'i' };
   if (req.query.isActive !== undefined) filter.isActive = req.query.isActive === 'true';
+  if (req.localityId) filter.locality = req.localityId;
 
   const [teams, total] = await Promise.all([
     Team.find(filter)

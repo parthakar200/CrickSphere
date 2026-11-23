@@ -1,44 +1,89 @@
 <header class="topbar">
   <div class="topbar__row">
-    <div class="topbar__search">
+    <div class="topbar__search" [class.topbar__search--active]="searchQuery().length > 0">
       <span class="material-icons">search</span>
       <input
         type="text"
         placeholder="Search players, teams, tournaments, matches..."
         [value]="searchQuery()"
-        (input)="searchQuery.set($any($event.target).value)"
+        (input)="onSearchInput($any($event.target).value)"
         (keyup.enter)="onSearchSubmit()"
       />
+      @if (searchQuery().length > 0) {
+        <button type="button" class="topbar__search-clear" (click)="onSearchInput('')" aria-label="Clear search">
+          <span class="material-icons">close</span>
+        </button>
+      }
     </div>
 
     <div class="topbar__actions">
+      <!-- Locality: Village Switcher ONLY for spectators. Scorers/Admins cannot change village. -->
+      @if (!auth.isScorer()) {
+        <div class="topbar__locality">
+          <button type="button" class="topbar__locality-btn" (click)="toggleLocalityMenu()" aria-label="Select village">
+            <span class="material-icons locality-icon">location_on</span>
+            <span class="locality-name">{{ localityService.selectedLocalityName() }}</span>
+            <span class="material-icons locality-arrow">arrow_drop_down</span>
+          </button>
+
+          @if (localityMenuOpen()) {
+            <div class="topbar__locality-menu">
+              <div class="topbar__locality-menu-title">Switch Village / Locality</div>
+              @for (loc of localityService.localities(); track loc._id) {
+                <button
+                  type="button"
+                  class="topbar__locality-item"
+                  [class.topbar__locality-item--active]="loc._id === localityService.selectedLocalityId()"
+                  (click)="switchLocality(loc)"
+                >
+                  <span class="material-icons loc-check">{{ loc._id === localityService.selectedLocalityId() ? 'check_circle' : 'radio_button_unchecked' }}</span>
+                  <span class="loc-item-name">{{ loc.name }}</span>
+                  @if (loc.isDefault) {
+                    <span class="loc-item-default">Default</span>
+                  }
+                </button>
+              }
+            </div>
+          }
+        </div>
+      } @else {
+        <!-- Static read-only badge showing village (no dropdown / no change option) -->
+        <div class="topbar__locality-badge" title="Your village">
+          <span class="material-icons locality-icon">location_on</span>
+          <span class="locality-name">{{ localityService.selectedLocalityName() }}</span>
+        </div>
+      }
+
       <button type="button" class="topbar__icon-btn" (click)="toggleTheme()" aria-label="Toggle theme">
         <span class="material-icons">{{ theme() === 'dark' ? 'light_mode' : 'dark_mode' }}</span>
       </button>
 
-      <button type="button" class="topbar__icon-btn" aria-label="Notifications">
-        <span class="material-icons">notifications</span>
-      </button>
+      @if (auth.isAuthenticated()) {
+        <div class="topbar__user">
+          <button type="button" class="topbar__user-btn" (click)="toggleUserMenu()">
+            <span class="topbar__avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
+            <span class="topbar__user-name">{{ currentUser()?.name }}</span>
+            <span class="material-icons topbar__chevron">expand_more</span>
+          </button>
 
-      <div class="topbar__user">
-        <button type="button" class="topbar__user-btn" (click)="toggleUserMenu()">
-          <span class="topbar__avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
-          <span class="topbar__user-name">{{ currentUser()?.name }}</span>
-          <span class="material-icons topbar__chevron">expand_more</span>
-        </button>
-
-        @if (userMenuOpen()) {
-          <div class="topbar__user-menu">
-            <div class="topbar__user-menu-role">{{ currentUser()?.role }}</div>
-            <a routerLink="/profile" class="topbar__user-menu-item">
-              <span class="material-icons">person</span> Profile
-            </a>
-            <button type="button" class="topbar__user-menu-item" (click)="logout()">
-              <span class="material-icons">logout</span> Log out
-            </button>
-          </div>
-        }
-      </div>
+          @if (userMenuOpen()) {
+            <div class="topbar__user-menu">
+              <div class="topbar__user-menu-role">{{ currentUser()?.role }}</div>
+              <a routerLink="/profile" class="topbar__user-menu-item">
+                <span class="material-icons">person</span> Profile
+              </a>
+              <button type="button" class="topbar__user-menu-item" (click)="logout()">
+                <span class="material-icons">logout</span> Log out
+              </button>
+            </div>
+          }
+        </div>
+      } @else {
+        <a routerLink="/auth/login" class="topbar__login-btn" title="Scorer or Admin Login">
+          <span class="material-icons">login</span>
+          <span class="topbar__login-label">Official Login</span>
+        </a>
+      }
     </div>
   </div>
 

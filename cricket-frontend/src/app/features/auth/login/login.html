@@ -3,7 +3,12 @@
     <div class="auth-page__hero-content">
       <span class="material-icons auth-page__hero-icon">sports_cricket</span>
       <h1 class="font-display">CrickSphere</h1>
-      <p>Score every ball. Track every record. Run the whole tournament from one place.</p>
+      <p>Local cricket tournaments, live ball-by-ball scoring, and community match records.</p>
+
+      <div class="auth-page__village-badge">
+        <span class="material-icons">location_on</span>
+        <span>Active Village: <strong>{{ localityService.selectedLocalityName() }}</strong></span>
+      </div>
 
       <div class="auth-page__stat-row">
         <div class="auth-page__stat">
@@ -24,48 +29,220 @@
 
   <div class="auth-page__form-side">
     <div class="auth-card card-flat">
-      <h2 class="font-display">Sign in</h2>
-      <p class="auth-card__subtitle">Welcome back — let's get you to the scorecard.</p>
 
-      <form [formGroup]="form" (ngSubmit)="submit()" class="auth-form">
-        <label class="auth-form__field">
-          <span>Email</span>
-          <input type="email" formControlName="email" placeholder="you@example.com" autocomplete="email" />
-          @if (form.controls.email.invalid && form.controls.email.touched) {
-            <small class="auth-form__error">Enter a valid email address</small>
-          }
-        </label>
+      <!-- ================= 1. SPECTATOR MODE (DEFAULT) ================= -->
+      @if (mode() === 'spectator') {
+        <div class="viewer-access-card">
+          <div class="viewer-access-card__header">
+            <span class="material-icons viewer-icon">visibility</span>
+            <div>
+              <h3>Just Watching? View As Spectator</h3>
+              <p>No login or password needed. Choose your village to see live match scores instantly.</p>
+            </div>
+          </div>
 
-        <label class="auth-form__field">
-          <span>Password</span>
-          <div class="auth-form__password-wrap">
-            <input
-              [type]="showPassword() ? 'text' : 'password'"
-              formControlName="password"
-              placeholder="••••••••"
-              autocomplete="current-password"
-            />
-            <button type="button" class="auth-form__toggle-visibility" (click)="showPassword.set(!showPassword())">
-              <span class="material-icons">{{ showPassword() ? 'visibility_off' : 'visibility' }}</span>
+          <div class="viewer-access-card__action">
+            <label class="auth-form__field">
+              <span>Select Village / Locality</span>
+              @if (localityService.localities().length > 0) {
+                <select
+                  [value]="viewerLocalityId()"
+                  (change)="onViewerLocalityChange($any($event.target).value)"
+                  class="auth-form__select"
+                >
+                  @for (loc of localityService.localities(); track loc._id) {
+                    <option [value]="loc._id">{{ loc.name }}</option>
+                  }
+                </select>
+              } @else {
+                <div class="auth-form__loading-hint">
+                  <span class="material-icons spin">sync</span> Loading villages...
+                </div>
+              }
+            </label>
+
+            <button type="button" class="btn-viewer-go" (click)="exploreAsViewer()" [disabled]="!viewerLocalityId()">
+              <span class="material-icons">sports_score</span>
+              Watch {{ localityService.selectedLocalityName() }} Matches
             </button>
           </div>
-          @if (form.controls.password.invalid && form.controls.password.touched) {
-            <small class="auth-form__error">Password is required</small>
-          }
-        </label>
+        </div>
 
-        <button type="submit" class="auth-form__submit" [disabled]="loading()">
-          @if (loading()) {
-            <span class="auth-form__spinner"></span>
-          } @else {
-            Sign in
-          }
-        </button>
-      </form>
+        <!-- TWO OPTIONS BELOW: SIGN IN & SIGN UP -->
+        <div class="auth-separator">
+          <span>OFFICIAL ACCESS (SCORER / ADMIN)</span>
+        </div>
 
-      <p class="auth-card__footer">
-        Don't have an account? <a routerLink="/auth/register">Create one</a>
-      </p>
+        <div class="auth-mode-options">
+          <button type="button" class="btn-mode-select btn-mode-signin" (click)="setMode('signin')">
+            <span class="material-icons">login</span>
+            <div class="btn-mode-select__text">
+              <strong>Sign In</strong>
+              <small>Existing scorer or admin login</small>
+            </div>
+            <span class="material-icons arrow">chevron_right</span>
+          </button>
+
+          <button type="button" class="btn-mode-select btn-mode-signup" (click)="setMode('signup')">
+            <span class="material-icons">add_location_alt</span>
+            <div class="btn-mode-select__text">
+              <strong>Sign Up</strong>
+              <small>Register new village & accounts</small>
+            </div>
+            <span class="material-icons arrow">chevron_right</span>
+          </button>
+        </div>
+      }
+
+      <!-- ================= 2. SIGN IN MODE ================= -->
+      @if (mode() === 'signin') {
+        <div class="auth-header-row">
+          <button type="button" class="btn-back" (click)="setMode('spectator')" title="Back to Spectator view">
+            <span class="material-icons">arrow_back</span>
+            <span>Back</span>
+          </button>
+          <div class="auth-header-row__title">
+            <h2 class="font-display">Official Sign In</h2>
+            <p>Enter your scorer or admin credentials for your locality.</p>
+          </div>
+        </div>
+
+        <form [formGroup]="signInForm" (ngSubmit)="submitSignIn()" class="auth-form">
+          <label class="auth-form__field">
+            <span>Choose Your Locality</span>
+            <select formControlName="localityId" class="auth-form__select">
+              <option value="" disabled>-- Select Locality / Village --</option>
+              @for (loc of localityService.localities(); track loc._id) {
+                <option [value]="loc._id">{{ loc.name }}</option>
+              }
+            </select>
+            @if (signInForm.controls.localityId.invalid && signInForm.controls.localityId.touched) {
+              <small class="auth-form__error">Please choose your locality</small>
+            }
+          </label>
+
+          <label class="auth-form__field">
+            <span>Official Email / Scorer ID</span>
+            <input type="email" formControlName="email" placeholder="scorer@cricket.local" autocomplete="email" />
+            @if (signInForm.controls.email.invalid && signInForm.controls.email.touched) {
+              <small class="auth-form__error">Enter a valid email address</small>
+            }
+          </label>
+
+          <label class="auth-form__field">
+            <span>Password</span>
+            <div class="auth-form__password-wrap">
+              <input
+                [type]="showSignInPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="current-password"
+              />
+              <button
+                type="button"
+                class="auth-form__toggle-visibility"
+                (click)="showSignInPassword.set(!showSignInPassword())"
+              >
+                <span class="material-icons">{{ showSignInPassword() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            @if (signInForm.controls.password.invalid && signInForm.controls.password.touched) {
+              <small class="auth-form__error">Password is required</small>
+            }
+          </label>
+
+          <button type="submit" class="auth-form__submit" [disabled]="loading()">
+            @if (loading()) {
+              <span class="auth-form__spinner"></span>
+            } @else {
+              <span class="material-icons">login</span>
+              Sign In as Scorer / Admin
+            }
+          </button>
+        </form>
+
+        <div class="auth-switch-links">
+          <span>Want to register a new village?</span>
+          <button type="button" class="btn-link" (click)="setMode('signup')">Sign Up Here</button>
+        </div>
+      }
+
+      <!-- ================= 3. SIGN UP MODE ================= -->
+      @if (mode() === 'signup') {
+        <div class="auth-header-row">
+          <button type="button" class="btn-back" (click)="setMode('spectator')" title="Back to Spectator view">
+            <span class="material-icons">arrow_back</span>
+            <span>Back</span>
+          </button>
+          <div class="auth-header-row__title">
+            <h2 class="font-display">Register Village</h2>
+            <p>Set up a new village and create its Admin & Scorer credentials.</p>
+          </div>
+        </div>
+
+        <form [formGroup]="signUpForm" (ngSubmit)="registerVillage()" class="auth-form">
+          <label class="auth-form__field">
+            <span>Village / Locality Name *</span>
+            <input type="text" formControlName="name" placeholder="e.g. Nadigaon or Soro" />
+            @if (signUpForm.controls.name.invalid && signUpForm.controls.name.touched) {
+              <small class="auth-form__error">Village name is required (at least 2 characters)</small>
+            }
+          </label>
+
+          <label class="auth-form__field">
+            <span>Admin Email / ID *</span>
+            <input type="email" formControlName="adminEmail" placeholder="e.g. admin@nadigaon.local" autocomplete="email" />
+            @if (signUpForm.controls.adminEmail.invalid && signUpForm.controls.adminEmail.touched) {
+              <small class="auth-form__error">Enter a valid email for the Village Admin</small>
+            }
+          </label>
+
+          <label class="auth-form__field">
+            <span>Scorer Email / ID *</span>
+            <input type="email" formControlName="scorerEmail" placeholder="e.g. scorer@nadigaon.local" autocomplete="email" />
+            @if (signUpForm.controls.scorerEmail.invalid && signUpForm.controls.scorerEmail.touched) {
+              <small class="auth-form__error">Enter a valid email for the Village Scorer</small>
+            }
+          </label>
+
+          <label class="auth-form__field">
+            <span>Password (same for both) *</span>
+            <div class="auth-form__password-wrap">
+              <input
+                [type]="showSignUpPassword() ? 'text' : 'password'"
+                formControlName="password"
+                placeholder="••••••••"
+                autocomplete="new-password"
+              />
+              <button
+                type="button"
+                class="auth-form__toggle-visibility"
+                (click)="showSignUpPassword.set(!showSignUpPassword())"
+              >
+                <span class="material-icons">{{ showSignUpPassword() ? 'visibility_off' : 'visibility' }}</span>
+              </button>
+            </div>
+            @if (signUpForm.controls.password.invalid && signUpForm.controls.password.touched) {
+              <small class="auth-form__error">Password must be at least 8 characters</small>
+            }
+          </label>
+
+          <button type="submit" class="auth-form__submit btn-signup-submit" [disabled]="signingUp()">
+            @if (signingUp()) {
+              <span class="auth-form__spinner"></span>
+            } @else {
+              <span class="material-icons">rocket_launch</span>
+              Sign Up & Create Village
+            }
+          </button>
+        </form>
+
+        <div class="auth-switch-links">
+          <span>Already registered your village?</span>
+          <button type="button" class="btn-link" (click)="setMode('signin')">Sign In Here</button>
+        </div>
+      }
+
     </div>
   </div>
 </div>

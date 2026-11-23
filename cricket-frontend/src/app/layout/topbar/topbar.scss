@@ -9,7 +9,37 @@
   justify-content: space-between;
   height: 64px;
   padding: 0 1.5rem;
-  gap: 1.5rem;
+  gap: 1rem;
+}
+
+.topbar__back-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 10px;
+  border: 1px solid var(--color-border);
+  background: var(--color-surface-raised);
+  color: var(--color-text-secondary);
+  cursor: pointer;
+  transition: all 0.18s ease;
+
+  .material-icons {
+    font-size: 17px;
+  }
+
+  &:hover {
+    background: var(--color-electric-soft);
+    border-color: var(--color-electric);
+    color: var(--color-electric);
+    transform: translateX(-2px);
+  }
+
+  &:active {
+    transform: translateX(-4px) scale(0.95);
+  }
 }
 
 .topbar__search {
@@ -45,6 +75,28 @@
   &:focus-within {
     border-color: var(--color-electric);
   }
+
+  &--active {
+    border-color: var(--color-electric);
+  }
+}
+
+.topbar__search-clear {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  color: var(--color-text-tertiary);
+  padding: 0;
+  flex-shrink: 0;
+  line-height: 1;
+  transition: color 0.15s;
+
+  .material-icons { font-size: 17px; }
+
+  &:hover { color: var(--color-text-primary); }
 }
 
 .topbar__actions {
@@ -69,6 +121,171 @@
   &:hover {
     background: var(--color-electric-soft);
     color: var(--color-electric);
+  }
+}
+
+// ---- Locality Switcher ----
+.topbar__locality {
+  position: relative;
+}
+
+.topbar__locality-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  background: rgba(16, 185, 129, 0.08);
+  border: 1px solid rgba(16, 185, 129, 0.25);
+  border-radius: 999px;
+  font-size: 0.82rem;
+  user-select: none;
+
+  .locality-icon {
+    font-size: 16px;
+    color: var(--color-emerald);
+  }
+
+  .locality-name {
+    font-weight: 600;
+    color: var(--color-text-primary);
+    max-width: 160px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
+
+.topbar__locality-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.35rem 0.75rem;
+  border-radius: 999px;
+  border: 1px solid rgba(16, 185, 129, 0.4);
+  background: rgba(16, 185, 129, 0.08);
+  cursor: pointer;
+  color: var(--color-text-primary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  transition: all 0.15s ease;
+
+  .locality-icon {
+    font-size: 16px;
+    color: var(--color-emerald);
+  }
+
+  .locality-name {
+    max-width: 140px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .locality-arrow {
+    font-size: 18px;
+    color: var(--color-text-tertiary);
+  }
+
+  &:hover {
+    background: rgba(16, 185, 129, 0.16);
+    border-color: var(--color-emerald);
+  }
+}
+
+.topbar__locality-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 230px;
+  background: var(--color-surface-raised);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-card);
+  box-shadow: var(--shadow-card);
+  padding: 0.5rem;
+  z-index: 40;
+}
+
+.topbar__locality-menu-title {
+  font-size: 0.7rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--color-text-tertiary);
+  padding: 0.4rem 0.6rem;
+  font-weight: 700;
+}
+
+.topbar__locality-item {
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  width: 100%;
+  padding: 0.55rem 0.6rem;
+  border-radius: 8px;
+  border: none;
+  background: transparent;
+  color: var(--color-text-primary);
+  font-size: 0.85rem;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.12s;
+
+  .loc-check {
+    font-size: 17px;
+    color: var(--color-text-tertiary);
+  }
+
+  .loc-item-name {
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .loc-item-default {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    background: var(--color-electric-soft);
+    color: var(--color-electric);
+    font-weight: 700;
+    text-transform: uppercase;
+  }
+
+  &:hover {
+    background: var(--color-electric-soft);
+  }
+
+  &--active {
+    background: rgba(16, 185, 129, 0.12);
+    font-weight: 600;
+
+    .loc-check {
+      color: var(--color-emerald);
+    }
+  }
+}
+
+.topbar__login-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.75rem;
+  border-radius: var(--radius-control);
+  background: var(--color-electric-soft);
+  color: var(--color-electric);
+  border: 1px solid rgba(59, 130, 246, 0.3);
+  text-decoration: none;
+  font-size: 0.82rem;
+  font-weight: 700;
+  transition: all 0.15s ease;
+
+  .material-icons {
+    font-size: 16px;
+  }
+
+  &:hover {
+    background: var(--color-electric);
+    color: white;
   }
 }
 
@@ -232,59 +449,112 @@
 
 @media (max-width: 640px) {
   .topbar__row {
-    padding: 0 0.75rem;
-    gap: 0.5rem;
+    padding: 0 0.5rem;
+    gap: 0.4rem;
     height: 56px;
+    min-width: 0;
   }
 
   .topbar__search {
-    max-width: none; // let it shrink/grow freely instead of fighting for 420px
-    padding: 0.4rem 0.65rem;
+    flex: 1 1 80px;
+    min-width: 50px;
+    max-width: none;
+    padding: 0.35rem 0.5rem;
 
     input {
-      font-size: 0.8rem;
+      font-size: 0.78rem;
+      min-width: 0;
+
+      &::placeholder {
+        font-size: 0.72rem;
+      }
     }
   }
 
   .topbar__actions {
-    gap: 0.15rem;
+    gap: 0.25rem;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+  }
+
+  .topbar__locality-badge,
+  .topbar__locality-btn {
+    padding: 0.3rem 0.45rem;
+    font-size: 0.75rem;
+
+    .locality-name {
+      max-width: 70px;
+    }
+
+    .locality-icon {
+      font-size: 15px;
+    }
   }
 
   .topbar__icon-btn {
-    width: 34px;
-    height: 34px;
+    width: 32px;
+    height: 32px;
+    flex-shrink: 0;
+    
+    .material-icons {
+      font-size: 18px;
+    }
   }
 
-  // Keep the avatar + chevron (still tappable, still shows who's logged in
-  // via initial) but drop the full name — there's no room for it next to
-  // the search bar on a phone, and it's one tap away in the menu anyway.
+  .topbar__user {
+    flex-shrink: 0;
+  }
+
+  .topbar__user-btn {
+    padding: 0.2rem 0.3rem 0.2rem 0.2rem;
+    gap: 0.2rem;
+  }
+
+  .topbar__avatar {
+    width: 28px;
+    height: 28px;
+    font-size: 0.75rem;
+  }
+
   .topbar__user-name {
     display: none;
   }
 
-  .topbar__user-btn {
-    padding: 0.3rem 0.4rem 0.3rem 0.3rem;
+  .topbar__chevron {
+    font-size: 15px;
   }
 
   .ticker {
-    margin: 0 0.75rem 0.6rem;
-    padding: 0.4rem 0.75rem;
-    gap: 0.6rem;
+    margin: 0 0.5rem 0.5rem;
+    padding: 0.35rem 0.65rem;
+    gap: 0.5rem;
   }
 
   .ticker__chip {
-    font-size: 0.75rem;
+    font-size: 0.72rem;
   }
 }
 
-@media (max-width: 380px) {
-  // Very narrow phones (e.g. older/smaller devices): the search input's
-  // placeholder text is long, so drop to icon-only search here — tapping
-  // it still focuses the input and the keyboard/autocomplete makes intent
-  // obvious without needing visible placeholder text.
+@media (max-width: 440px) {
+  .topbar__locality-badge .locality-name,
+  .topbar__locality-btn .locality-name,
+  .topbar__locality-btn .locality-arrow {
+    display: none;
+  }
+
+  .topbar__locality-badge,
+  .topbar__locality-btn {
+    padding: 0.3rem;
+    border-radius: 50%;
+    width: 30px;
+    height: 30px;
+    justify-content: center;
+  }
+
   .topbar__search input {
     &::placeholder {
-      opacity: 0; // avoid clipped, ugly-looking placeholder truncation
+      opacity: 0;
     }
   }
 }

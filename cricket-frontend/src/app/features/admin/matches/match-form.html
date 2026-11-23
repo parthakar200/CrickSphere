@@ -3,6 +3,8 @@
 </div>
 
 <form [formGroup]="form" (ngSubmit)="submit()" class="admin-form">
+
+  <!-- Match name -->
   <label class="admin-form__field">
     <span>Match name</span>
     <input type="text" formControlName="name" placeholder="Mumbai Tigers vs Delhi Dragons" />
@@ -11,6 +13,7 @@
     }
   </label>
 
+  <!-- Mode toggle -->
   <div class="admin-form__field">
     <span>Match mode</span>
     <div class="match-form__mode-toggle">
@@ -20,6 +23,7 @@
         [class.match-form__mode-btn--active]="form.controls.mode.value === 'single'"
         (click)="onModeChange('single')"
       >
+        <span class="material-icons">sports_cricket</span>
         Single match
       </button>
       <button
@@ -28,11 +32,24 @@
         [class.match-form__mode-btn--active]="form.controls.mode.value === 'tournament'"
         (click)="onModeChange('tournament')"
       >
+        <span class="material-icons">emoji_events</span>
         Tournament match
       </button>
     </div>
+
+    <!-- Mode info banner -->
+    <div class="match-form__mode-info">
+      @if (form.controls.mode.value === 'single') {
+        <span class="material-icons">info</span>
+        <span>Single match — teams are standalone and players are not bound to teams. You can pick any player for the Playing XI when scoring.</span>
+      } @else {
+        <span class="material-icons">info</span>
+        <span>Tournament match — teams are bound to this tournament. You can assign players to each team's squad via Teams &gt; Manage squad.</span>
+      }
+    </div>
   </div>
 
+  <!-- Tournament selector (only for tournament mode) -->
   @if (form.controls.mode.value === 'tournament') {
     <label class="admin-form__field">
       <span>Tournament</span>
@@ -42,31 +59,219 @@
           <option [value]="tournament._id">{{ tournament.name }}</option>
         }
       </select>
+      @if (form.controls.tournament.invalid && form.controls.tournament.touched) {
+        <small class="admin-form__error">Please select a tournament</small>
+      }
     </label>
   }
 
-  <div class="admin-form__row">
-    <label class="admin-form__field">
+  <!-- Team A -->
+  <div class="admin-form__field">
+    <div class="match-form__team-header">
       <span>Team A</span>
-      <select formControlName="teamA">
-        <option value="">Select team A</option>
-        @for (team of availableTeams(); track team._id) {
-          <option [value]="team._id">{{ team.name }}</option>
-        }
-      </select>
-    </label>
+      <button
+        type="button"
+        class="match-form__add-team-btn"
+        [class.match-form__add-team-btn--active]="showInlineTeamA()"
+        (click)="toggleInlineTeam('A')"
+      >
+        <span class="material-icons">{{ showInlineTeamA() ? 'close' : 'add' }}</span>
+        {{ showInlineTeamA() ? 'Cancel' : 'New team' }}
+      </button>
+    </div>
 
-    <label class="admin-form__field">
-      <span>Team B</span>
-      <select formControlName="teamB">
-        <option value="">Select team B</option>
-        @for (team of availableTeams(); track team._id) {
-          <option [value]="team._id">{{ team.name }}</option>
+    <select formControlName="teamA">
+      <option value="">Select team A</option>
+      @if (isTournamentMode() && form.controls.tournament.value) {
+        @if (tournamentTeams().length > 0) {
+          <optgroup label="Tournament Teams">
+            @for (team of tournamentTeams(); track team._id) {
+              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+            }
+          </optgroup>
         }
-      </select>
-    </label>
+        @if (otherTeams().length > 0) {
+          <optgroup label="Other Available Teams">
+            @for (team of otherTeams(); track team._id) {
+              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+            }
+          </optgroup>
+        }
+      } @else {
+        @for (team of allTeams(); track team._id) {
+          <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+        }
+      }
+    </select>
+    @if (form.controls.teamA.invalid && form.controls.teamA.touched) {
+      <small class="admin-form__error">Team A is required</small>
+    }
+
+    <!-- Inline quick-add Team A -->
+    @if (showInlineTeamA()) {
+      <div class="match-form__inline-team">
+        <div class="match-form__inline-team-title">
+          <span class="material-icons">shield</span>
+          <span>Create new team for Team A</span>
+          @if (isTournamentMode()) {
+            <span class="match-form__badge-tag">Tournament squad</span>
+          } @else {
+            <span class="match-form__badge-tag">Standalone</span>
+          }
+        </div>
+        <div class="admin-form__row">
+          <div class="match-form__inline-field">
+            <label>Team name *</label>
+            <input
+              type="text"
+              placeholder="Mumbai Tigers"
+              [ngModel]="inlineTeamA().name"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="updateInlineTeam('A', {name: $event})"
+            />
+          </div>
+          <div class="match-form__inline-field">
+            <label>Short name * <small>(max 6 chars)</small></label>
+            <input
+              type="text"
+              placeholder="MUT"
+              maxlength="6"
+              [ngModel]="inlineTeamA().shortName"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="updateInlineTeam('A', {shortName: $event})"
+            />
+          </div>
+        </div>
+        <div class="match-form__inline-field">
+          <label>Home ground (optional)</label>
+          <input
+            type="text"
+            placeholder="Wankhede Stadium"
+            [ngModel]="inlineTeamA().homeGround"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="updateInlineTeam('A', {homeGround: $event})"
+          />
+        </div>
+        @if (inlineTeamA().error) {
+          <small class="admin-form__error">{{ inlineTeamA().error }}</small>
+        }
+        <button
+          type="button"
+          class="match-form__inline-submit"
+          [disabled]="inlineTeamA().loading"
+          (click)="createInlineTeam('A')"
+        >
+          @if (inlineTeamA().loading) { <span class="admin-form__spinner"></span> }
+          Create & select as Team A
+        </button>
+      </div>
+    }
   </div>
 
+  <!-- Team B -->
+  <div class="admin-form__field">
+    <div class="match-form__team-header">
+      <span>Team B</span>
+      <button
+        type="button"
+        class="match-form__add-team-btn"
+        [class.match-form__add-team-btn--active]="showInlineTeamB()"
+        (click)="toggleInlineTeam('B')"
+      >
+        <span class="material-icons">{{ showInlineTeamB() ? 'close' : 'add' }}</span>
+        {{ showInlineTeamB() ? 'Cancel' : 'New team' }}
+      </button>
+    </div>
+
+    <select formControlName="teamB">
+      <option value="">Select team B</option>
+      @if (isTournamentMode() && form.controls.tournament.value) {
+        @if (tournamentTeams().length > 0) {
+          <optgroup label="Tournament Teams">
+            @for (team of tournamentTeams(); track team._id) {
+              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+            }
+          </optgroup>
+        }
+        @if (otherTeams().length > 0) {
+          <optgroup label="Other Available Teams">
+            @for (team of otherTeams(); track team._id) {
+              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+            }
+          </optgroup>
+        }
+      } @else {
+        @for (team of allTeams(); track team._id) {
+          <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+        }
+      }
+    </select>
+    @if (form.controls.teamB.invalid && form.controls.teamB.touched) {
+      <small class="admin-form__error">Team B is required</small>
+    }
+
+    <!-- Inline quick-add Team B -->
+    @if (showInlineTeamB()) {
+      <div class="match-form__inline-team">
+        <div class="match-form__inline-team-title">
+          <span class="material-icons">shield</span>
+          <span>Create new team for Team B</span>
+          @if (isTournamentMode()) {
+            <span class="match-form__badge-tag">Tournament squad</span>
+          } @else {
+            <span class="match-form__badge-tag">Standalone</span>
+          }
+        </div>
+        <div class="admin-form__row">
+          <div class="match-form__inline-field">
+            <label>Team name *</label>
+            <input
+              type="text"
+              placeholder="Delhi Dragons"
+              [ngModel]="inlineTeamB().name"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="updateInlineTeam('B', {name: $event})"
+            />
+          </div>
+          <div class="match-form__inline-field">
+            <label>Short name * <small>(max 6 chars)</small></label>
+            <input
+              type="text"
+              placeholder="DEL"
+              maxlength="6"
+              [ngModel]="inlineTeamB().shortName"
+              [ngModelOptions]="{standalone: true}"
+              (ngModelChange)="updateInlineTeam('B', {shortName: $event})"
+            />
+          </div>
+        </div>
+        <div class="match-form__inline-field">
+          <label>Home ground (optional)</label>
+          <input
+            type="text"
+            placeholder="Feroz Shah Kotla"
+            [ngModel]="inlineTeamB().homeGround"
+            [ngModelOptions]="{standalone: true}"
+            (ngModelChange)="updateInlineTeam('B', {homeGround: $event})"
+          />
+        </div>
+        @if (inlineTeamB().error) {
+          <small class="admin-form__error">{{ inlineTeamB().error }}</small>
+        }
+        <button
+          type="button"
+          class="match-form__inline-submit"
+          [disabled]="inlineTeamB().loading"
+          (click)="createInlineTeam('B')"
+        >
+          @if (inlineTeamB().loading) { <span class="admin-form__spinner"></span> }
+          Create & select as Team B
+        </button>
+      </div>
+    }
+  </div>
+
+  <!-- Match type + Overs -->
   <div class="admin-form__row">
     <label class="admin-form__field">
       <span>Match type</span>
@@ -97,4 +302,5 @@
     </button>
     <a routerLink="/admin/matches" class="admin-form__cancel">Cancel</a>
   </div>
+
 </form>

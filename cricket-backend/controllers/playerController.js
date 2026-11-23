@@ -18,6 +18,7 @@ const createPlayer = asyncHandler(async (req, res) => {
     role,
     battingStyle,
     bowlingStyle,
+    locality: req.body.locality || req.user?.locality || req.localityId,
     createdBy: req.user._id,
   });
 
@@ -34,6 +35,7 @@ const getPlayers = asyncHandler(async (req, res) => {
   if (req.query.role) filter.role = req.query.role;
   if (req.query.search) filter.$text = { $search: req.query.search };
   if (req.query.isActive !== undefined) filter.isActive = req.query.isActive === 'true';
+  if (req.localityId) filter.locality = req.localityId;
 
   const [players, total] = await Promise.all([
     Player.find(filter).sort(sort).skip(skip).limit(limit),
