@@ -1,5 +1,5 @@
 const axios = require('axios');
-const { Player, CareerStats } = require('../models');
+const { Player, CareerStats, Locality } = require('../models');
 
 function mapRole(role) {
   return {
@@ -11,23 +11,32 @@ function mapRole(role) {
 }
 
 async function syncPlayers(createdByUserId) {
+  const kudei = await Locality.findOne({ slug: 'kudei' });
+  const localityId = kudei ? kudei._id : null;
+
   const { data } = await axios.get(
-    'https://node-backend-for-auction.onrender.com/api/players'
+    'https://node-backend-for-auction.onrender.com/api/players',
+    { timeout: 15000 }
   );
 
   for (const p of data) {
+    const updatePayload = {
+      auctionPlayerId: p.id,
+      name: p.name,
+      photo: p.photo,
+      role: mapRole(p.role),
+    };
+    if (localityId) {
+      updatePayload.locality = localityId;
+    }
+
     const player = await Player.findOneAndUpdate(
       { auctionPlayerId: p.id },
       {
-        $set: {
-          auctionPlayerId: p.id,
-          name: p.name,
-          photo: p.photo,
-          role: mapRole(p.role),
-        },
+        $set: updatePayload,
         // Only applied when a *new* document is inserted, so re-running sync
         // never clobbers who actually owns/edited an existing player record.
-        $setOnInsert: { createdBy: createdByUserId },
+        $setOnInsert: { createdBy: createdByUserId, ...(localityId && { locality: localityId }) },
       },
       { upsert: true, new: true, setDefaultsOnInsert: true, runValidators: true }
     );
