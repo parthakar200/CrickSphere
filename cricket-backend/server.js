@@ -48,7 +48,7 @@ async function start() {
 
   await connectDB();
   await ensureDefaultLocalities();
-  startAutoSync(); // polls the auction app for new players every 10 minutes
+  startAutoSync(); // schedules kpl-auction sync at most 4 times a day (every 6 hours)
 
   const shutdown = (signal) => {
     logger.info(`${signal} received. Shutting down gracefully...`);

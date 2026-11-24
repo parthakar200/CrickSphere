@@ -10,6 +10,7 @@ const localitySchema = new Schema(
     state: { type: String, default: null },
     isActive: { type: Boolean, default: true },
     isDefault: { type: Boolean, default: false },
+    lastAuctionSyncedAt: { type: Date, default: null },
   },
   { timestamps: true }
 );

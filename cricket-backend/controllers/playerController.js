@@ -112,8 +112,8 @@ const deletePlayer = asyncHandler(async (req, res) => {
 const { syncPlayers } = require('../services/playerSyncService');
 
 const syncPlayersController = asyncHandler(async (req, res) => {
-  await syncPlayers(req.user._id);
-  res.json({ success: true, message: 'Players synchronized successfully' });
+  const result = await syncPlayers(req.user._id, { force: true });
+  res.json({ success: true, message: 'Players and teams synchronized successfully', data: result });
 });
 
 module.exports = { createPlayer, getPlayers, getPlayerById, updatePlayer, deletePlayer, syncPlayersController };
