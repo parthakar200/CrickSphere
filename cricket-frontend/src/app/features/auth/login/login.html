@@ -46,12 +46,12 @@
               <span>Select Village / Locality</span>
               @if (localityService.localities().length > 0) {
                 <select
-                  [value]="viewerLocalityId()"
-                  (change)="onViewerLocalityChange($any($event.target).value)"
+                  [formControl]="viewerControl"
+                  (change)="onViewerLocalityChange(viewerControl.value || '')"
                   class="auth-form__select"
                 >
                   @for (loc of localityService.localities(); track loc._id) {
-                    <option [value]="loc._id">{{ loc.name }}</option>
+                    <option [value]="loc._id" [selected]="loc._id === viewerLocalityId()">{{ loc.name }}</option>
                   }
                 </select>
               } @else {
@@ -63,7 +63,7 @@
 
             <button type="button" class="btn-viewer-go" (click)="exploreAsViewer()" [disabled]="!viewerLocalityId()">
               <span class="material-icons">sports_score</span>
-              Watch {{ localityService.selectedLocalityName() }} Matches
+              Watch {{ viewerLocalityName() }} Matches
             </button>
           </div>
         </div>

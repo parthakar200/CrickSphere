@@ -1,4 +1,4 @@
-import { Component, OnInit, effect, inject, signal } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { finalize } from 'rxjs';
@@ -31,7 +31,15 @@ export class Login implements OnInit {
   showSignUpPassword = signal(false);
 
   // Spectator selection (no password required)
-  viewerLocalityId = signal<string>('');
+  viewerLocalityId = signal<string>(this.localityService.selectedLocalityId() || '');
+  viewerControl = this.fb.control<string>(this.localityService.selectedLocalityId() || '');
+
+  viewerLocalityName = computed(() => {
+    const id = this.viewerLocalityId();
+    const list = this.localityService.localities();
+    const matched = list.find((l) => l._id === id);
+    return matched?.name ?? this.localityService.selectedLocalityName();
+  });
 
   // Sign In Form
   signInForm = this.fb.nonNullable.group({
@@ -55,8 +63,9 @@ export class Login implements OnInit {
         if (!this.signInForm.controls.localityId.value) {
           this.signInForm.controls.localityId.setValue(currentLocId);
         }
-        if (!this.viewerLocalityId()) {
+        if (!this.viewerLocalityId() || this.viewerLocalityId() !== currentLocId) {
           this.viewerLocalityId.set(currentLocId);
+          this.viewerControl.setValue(currentLocId, { emitEvent: false });
         }
       }
     });
@@ -71,10 +80,12 @@ export class Login implements OnInit {
         if (currentLocId) {
           this.signInForm.controls.localityId.setValue(currentLocId);
           this.viewerLocalityId.set(currentLocId);
+          this.viewerControl.setValue(currentLocId, { emitEvent: false });
         } else if (list.length > 0) {
           const first = list.find((l) => l.isDefault) || list[0];
           this.signInForm.controls.localityId.setValue(first._id);
           this.viewerLocalityId.set(first._id);
+          this.viewerControl.setValue(first._id, { emitEvent: false });
         }
       },
       error: () => undefined,
@@ -86,7 +97,9 @@ export class Login implements OnInit {
   }
 
   onViewerLocalityChange(id: string): void {
+    if (!id) return;
     this.viewerLocalityId.set(id);
+    this.viewerControl.setValue(id, { emitEvent: false });
     this.localityService.setLocalityById(id);
   }
 
