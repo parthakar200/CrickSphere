@@ -17,6 +17,7 @@
         <tr>
           <th>Match</th>
           <th>Teams</th>
+          <th>Date / Time</th>
           <th>Mode</th>
           <th>Type</th>
           <th>Overs</th>
@@ -28,6 +29,7 @@
           <tr [routerLink]="['/matches', match._id]" class="admin-table__row--clickable">
             <td>{{ match.name }}</td>
             <td>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</td>
+            <td class="font-mono">{{ (match.scheduledAt || match.createdAt) | date: 'mediumDate' }} {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}</td>
             <td>{{ match.mode }}</td>
             <td>{{ match.matchType }}</td>
             <td>{{ match.overs }}</td>

@@ -39,7 +39,7 @@ const createMatch = asyncHandler(async (req, res) => {
     overs,
     ballsPerOver: ballsPerOver || 6,
     venue,
-    scheduledAt,
+    scheduledAt: scheduledAt || new Date(),
     locality: req.body.locality || req.user?.locality || req.localityId,
     createdBy: req.user._id,
     scorers: [req.user._id],

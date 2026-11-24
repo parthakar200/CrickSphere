@@ -20,7 +20,12 @@
     </button>
 
     <header class="live-match__header">
-      <h1 class="font-display">{{ m.name }}</h1>
+      <div>
+        <h1 class="font-display">{{ m.name }}</h1>
+        @if (m.scheduledAt || m.createdAt) {
+          <span class="live-match__time font-mono">{{ (m.scheduledAt || m.createdAt) | date: 'mediumDate' }} • {{ (m.scheduledAt || m.createdAt) | date: 'shortTime' }}</span>
+        }
+      </div>
       <span class="live-match__status">{{ m.status }}</span>
     </header>
 

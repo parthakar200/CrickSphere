@@ -34,7 +34,12 @@
         @for (match of liveMatches(); track match._id) {
           <a class="live-card glass-panel" [routerLink]="['/matches', match._id, 'live']">
             <span class="live-card__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
-            <span class="live-card__meta font-mono">{{ match.matchType }} • {{ match.status }}</span>
+            <span class="live-card__meta font-mono">
+              {{ match.matchType }} • {{ match.status }}
+              @if (match.scheduledAt || match.createdAt) {
+                • {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}
+              }
+            </span>
           </a>
         }
       </div>

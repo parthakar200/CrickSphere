@@ -1,4 +1,5 @@
 import { Component, computed, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -23,7 +24,7 @@ const EMPTY_OVERVIEW: StatisticsOverview = {
 
 @Component({
   selector: 'app-dashboard',
-  imports: [RouterLink, StatCard, AppChart],
+  imports: [RouterLink, StatCard, AppChart, DatePipe],
   templateUrl: './dashboard.html',
   styleUrl: './dashboard.scss',
 })

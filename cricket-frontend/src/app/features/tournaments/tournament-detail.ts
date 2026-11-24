@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Location } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -9,7 +9,7 @@ import { Team } from '../../core/models';
 
 @Component({
   selector: 'app-tournament-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './tournament-detail.html',
   styleUrl: './tournament-detail.scss',
 })

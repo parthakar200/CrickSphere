@@ -288,10 +288,17 @@
     </label>
   </div>
 
-  <label class="admin-form__field">
-    <span>Venue (optional)</span>
-    <input type="text" formControlName="venue" placeholder="Wankhede Stadium" />
-  </label>
+  <div class="admin-form__row">
+    <label class="admin-form__field">
+      <span>Scheduled Date & Time (optional)</span>
+      <input type="datetime-local" formControlName="scheduledAt" />
+    </label>
+
+    <label class="admin-form__field">
+      <span>Venue (optional)</span>
+      <input type="text" formControlName="venue" placeholder="Wankhede Stadium" />
+    </label>
+  </div>
 
   <div class="admin-form__actions">
     <button type="submit" class="admin-form__submit" [disabled]="loading()">

@@ -43,6 +43,8 @@ export interface Match {
   ballsPerOver: number;
   venue?: string | null;
   scheduledAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
   toss: { winner: string | null; decision: 'bat' | 'bowl' | null };
   status: MatchStatus;
   /**

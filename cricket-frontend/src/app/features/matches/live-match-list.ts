@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { interval, startWith, switchMap, catchError, of } from 'rxjs';
 import { toSignal } from '@angular/core/rxjs-interop';
@@ -7,7 +8,7 @@ import { Team } from '../../core/models';
 
 @Component({
   selector: 'app-live-match-list',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './live-match-list.html',
   styleUrl: './live-match-list.scss',
 })

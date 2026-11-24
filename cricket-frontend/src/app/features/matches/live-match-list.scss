@@ -67,6 +67,26 @@
   color: var(--color-text-secondary);
 }
 
+.live-list__meta-row {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-top: 0.2rem;
+}
+
+.live-list__time {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--color-electric);
+  font-size: 0.75rem;
+
+  .meta-icon {
+    font-size: 13px;
+    color: var(--color-electric);
+  }
+}
+
 .live-list__icon {
   color: var(--color-text-tertiary);
   font-size: 22px;

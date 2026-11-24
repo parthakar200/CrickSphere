@@ -1,4 +1,5 @@
 import { Component, inject } from '@angular/core';
+import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { MatchService } from '../../../core/services/match.service';
 import { Match, Team } from '../../../core/models';
@@ -6,7 +7,7 @@ import { refetchableList } from '../../../core/utils/refetchable-list';
 
 @Component({
   selector: 'app-match-list',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './match-list.html',
   styleUrl: '../admin-shared.scss',
 })

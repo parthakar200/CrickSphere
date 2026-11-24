@@ -1,5 +1,5 @@
 import { Component, inject } from '@angular/core';
-import { Location } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of } from 'rxjs';
@@ -9,7 +9,7 @@ import { ScorecardBattingRow, ScorecardInnings } from '../../core/models/match-s
 
 @Component({
   selector: 'app-match-detail',
-  imports: [RouterLink],
+  imports: [RouterLink, DatePipe],
   templateUrl: './match-detail.html',
   styleUrl: './match-detail.scss',
 })

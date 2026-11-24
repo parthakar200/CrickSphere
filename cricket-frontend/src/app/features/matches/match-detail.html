@@ -11,6 +11,12 @@
         <p class="match-detail__meta">
           {{ teamName(m.teamA) }} vs {{ teamName(m.teamB) }}
           · {{ m.matchType }} · {{ m.overs }} overs
+          @if (m.venue) {
+            · {{ m.venue }}
+          }
+          @if (m.scheduledAt || m.createdAt) {
+            · <span class="font-mono">{{ (m.scheduledAt || m.createdAt) | date: 'mediumDate' }} {{ (m.scheduledAt || m.createdAt) | date: 'shortTime' }}</span>
+          }
         </p>
       </div>
       <span class="match-detail__badge" [class]="statusBadgeClass(m.status)">{{ m.status }}</span>

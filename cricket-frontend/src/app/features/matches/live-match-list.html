@@ -13,9 +13,17 @@
         @for (match of liveMatches(); track match._id) {
           <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card glass-panel">
             <span class="text-live-dot"></span>
-            <div>
+            <div class="live-list__content">
               <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
-              <span class="live-list__meta font-mono">{{ match.matchType }} · {{ match.overs }} overs</span>
+              <div class="live-list__meta-row">
+                <span class="live-list__meta font-mono">{{ match.matchType }} · {{ match.overs }} overs</span>
+                @if (match.scheduledAt || match.createdAt) {
+                  <span class="live-list__time font-mono">
+                    <span class="material-icons meta-icon">schedule</span>
+                    {{ (match.scheduledAt || match.createdAt) | date: 'mediumDate' }} • {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}
+                  </span>
+                }
+              </div>
             </div>
           </a>
         }
@@ -32,9 +40,17 @@
         @for (match of scheduledMatches(); track match._id) {
           <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card card-flat">
             <span class="material-icons live-list__icon">schedule</span>
-            <div>
+            <div class="live-list__content">
               <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
-              <span class="live-list__meta">{{ match.matchType }} · {{ match.overs }} overs</span>
+              <div class="live-list__meta-row">
+                <span class="live-list__meta">{{ match.matchType }} · {{ match.overs }} overs</span>
+                @if (match.scheduledAt || match.createdAt) {
+                  <span class="live-list__time font-mono">
+                    <span class="material-icons meta-icon">calendar_today</span>
+                    {{ (match.scheduledAt || match.createdAt) | date: 'mediumDate' }} • {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}
+                  </span>
+                }
+              </div>
             </div>
           </a>
         }
@@ -49,17 +65,25 @@
         @for (match of recentlyCompleted(); track match._id) {
           <a [routerLink]="['/matches', match._id, 'live']" class="live-list__card card-flat">
             <span class="material-icons live-list__icon">check_circle</span>
-            <div>
+            <div class="live-list__content">
               <strong>{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</strong>
-              <span class="live-list__meta">
-                @if (match.result.isTie) {
-                  Match tied
-                } @else if (winnerName(match); as w) {
-                  {{ w }} {{ match.result.winMargin }}
-                } @else {
-                  {{ match.result.winMargin || 'Completed' }}
+              <div class="live-list__meta-row">
+                <span class="live-list__meta">
+                  @if (match.result.isTie) {
+                    Match tied
+                  } @else if (winnerName(match); as w) {
+                    {{ w }} {{ match.result.winMargin }}
+                  } @else {
+                    {{ match.result.winMargin || 'Completed' }}
+                  }
+                </span>
+                @if (match.scheduledAt || match.createdAt) {
+                  <span class="live-list__time font-mono">
+                    <span class="material-icons meta-icon">event_available</span>
+                    {{ (match.scheduledAt || match.createdAt) | date: 'mediumDate' }} • {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}
+                  </span>
                 }
-              </span>
+              </div>
             </div>
           </a>
         }

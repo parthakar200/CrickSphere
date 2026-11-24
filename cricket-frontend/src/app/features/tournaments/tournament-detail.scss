@@ -151,6 +151,17 @@
   }
 }
 
+.match-row__main {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+
+.match-row__time {
+  font-size: 0.75rem;
+  color: var(--color-text-secondary);
+}
+
 .match-row__teams {
   font-weight: 600;
   color: var(--color-text-primary);

@@ -99,7 +99,7 @@ const matchSchema = new Schema(
     ballsPerOver: { type: Number, default: 6 },
 
     venue: { type: String, default: null },
-    scheduledAt: { type: Date, default: null },
+    scheduledAt: { type: Date, default: Date.now },
 
     toss: {
       winner: { type: Schema.Types.ObjectId, ref: 'Team', default: null },

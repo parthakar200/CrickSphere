@@ -170,6 +170,7 @@ export class MatchForm {
     matchType: ['T20' as MatchType],
     overs: [20, [Validators.required, Validators.min(1)]],
     venue: [''],
+    scheduledAt: [''],
   });
 
   private selectedMode = toSignal(this.form.controls.mode.valueChanges, {
@@ -239,6 +240,7 @@ export class MatchForm {
     const payload = {
       ...raw,
       tournament: raw.mode === 'tournament' ? raw.tournament : undefined,
+      scheduledAt: raw.scheduledAt ? new Date(raw.scheduledAt).toISOString() : new Date().toISOString(),
     };
 
     this.loading.set(true);

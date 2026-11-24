@@ -65,7 +65,14 @@
         <div class="tournament-detail__matches">
           @for (match of matches(); track match._id) {
             <a [routerLink]="['/matches', match._id, 'live']" class="match-row card-flat">
-              <span class="match-row__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
+              <div class="match-row__main">
+                <span class="match-row__teams">{{ teamLabel(match.teamA) }} vs {{ teamLabel(match.teamB) }}</span>
+                @if (match.scheduledAt || match.createdAt) {
+                  <span class="match-row__time font-mono">
+                    {{ (match.scheduledAt || match.createdAt) | date: 'mediumDate' }} • {{ (match.scheduledAt || match.createdAt) | date: 'shortTime' }}
+                  </span>
+                }
+              </div>
               <span class="match-row__status">{{ match.status }}</span>
             </a>
           }

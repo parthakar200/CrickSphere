@@ -1,7 +1,7 @@
 
 
 import { Component, OnDestroy, computed, effect, inject, signal } from '@angular/core';
-import { Location } from '@angular/common';
+import { DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, finalize, of, switchMap } from 'rxjs';
@@ -22,7 +22,7 @@ import { PlayingXIForm } from './live-match/playing-xi-form';
 
 @Component({
   selector: 'app-live-match',
-  imports: [RouterLink, TossForm, OpeningPlayersForm, NextBowlerForm, BallControls, ScorecardDisplay, NextBatterForm, PlayingXIForm],
+  imports: [RouterLink, DatePipe, TossForm, OpeningPlayersForm, NextBowlerForm, BallControls, ScorecardDisplay, NextBatterForm, PlayingXIForm],
   templateUrl: './live-match.html',
   styleUrl: './live-match.scss',
 })
