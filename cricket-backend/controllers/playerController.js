@@ -113,7 +113,7 @@ const { syncPlayers } = require('../services/playerSyncService');
 
 const syncPlayersController = asyncHandler(async (req, res) => {
   const result = await syncPlayers(req.user._id, { force: true });
-  res.json({ success: true, message: 'Players and teams synchronized successfully', data: result });
+  res.json({ success: true, message: 'Players synchronized successfully', data: result });
 });
 
 module.exports = { createPlayer, getPlayers, getPlayerById, updatePlayer, deletePlayer, syncPlayersController };
