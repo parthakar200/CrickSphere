@@ -18,26 +18,27 @@ async function buildMatchFilter(localityId, tournamentId) {
 // GET /api/statistics/overview  -> global numbers for the Statistics Center landing page
 const getOverview = asyncHandler(async (req, res) => {
   const locFilter = req.localityId ? { locality: req.localityId } : {};
-  const [totalPlayers, totalTeams, totalMatches, completedMatches] = await Promise.all([
+
+  let localityMatchIds = null;
+  if (req.localityId) {
+    localityMatchIds = await Match.find({ locality: req.localityId }).distinct('_id');
+  }
+  const matchQuery = localityMatchIds ? { match: { $in: localityMatchIds } } : {};
+
+  // Run all document counts and aggregations in parallel
+  const [totalPlayers, totalTeams, totalMatches, completedMatches, [runsAgg], [wicketsAgg]] = await Promise.all([
     Player.countDocuments({ isActive: true, ...locFilter }),
     Team.countDocuments({ isActive: true, ...locFilter }),
     Match.countDocuments({ ...locFilter }),
     Match.countDocuments({ status: 'completed', ...locFilter }),
-  ]);
-
-  let matchQuery = {};
-  if (req.localityId) {
-    const localityMatchIds = await Match.find({ locality: req.localityId }).distinct('_id');
-    matchQuery = { match: { $in: localityMatchIds } };
-  }
-
-  const [runsAgg] = await BattingStats.aggregate([
-    { $match: matchQuery },
-    { $group: { _id: null, totalRuns: { $sum: '$runs' }, totalSixes: { $sum: '$sixes' }, totalFours: { $sum: '$fours' } } },
-  ]);
-  const [wicketsAgg] = await BowlingStats.aggregate([
-    { $match: matchQuery },
-    { $group: { _id: null, totalWickets: { $sum: '$wickets' } } },
+    BattingStats.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: null, totalRuns: { $sum: '$runs' }, totalSixes: { $sum: '$sixes' }, totalFours: { $sum: '$fours' } } },
+    ]),
+    BowlingStats.aggregate([
+      { $match: matchQuery },
+      { $group: { _id: null, totalWickets: { $sum: '$wickets' } } },
+    ]),
   ]);
 
   res.json({

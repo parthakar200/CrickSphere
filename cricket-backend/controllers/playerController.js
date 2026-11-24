@@ -38,7 +38,7 @@ const getPlayers = asyncHandler(async (req, res) => {
   if (req.localityId) filter.locality = req.localityId;
 
   const [players, total] = await Promise.all([
-    Player.find(filter).sort(sort).skip(skip).limit(limit),
+    Player.find(filter).sort(sort).skip(skip).limit(limit).lean(),
     Player.countDocuments(filter),
   ]);
 
@@ -47,10 +47,11 @@ const getPlayers = asyncHandler(async (req, res) => {
 
 // GET /api/players/:id  -> full profile including career stats
 const getPlayerById = asyncHandler(async (req, res) => {
-  const player = await Player.findById(req.params.id);
+  const [player, careerStats] = await Promise.all([
+    Player.findById(req.params.id).lean(),
+    CareerStats.findOne({ player: req.params.id }).lean(),
+  ]);
   if (!player) throw ApiError.notFound('Player not found');
-
-  const careerStats = await CareerStats.findOne({ player: player._id });
 
   res.json({ success: true, data: { player, careerStats: careerStats || null } });
 });

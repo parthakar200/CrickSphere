@@ -30,6 +30,7 @@ const tournamentSchema = new Schema(
   { timestamps: true }
 );
 
+tournamentSchema.index({ locality: 1, status: 1 });
 tournamentSchema.index({ status: 1, startDate: -1 });
 tournamentSchema.index({ name: 'text' });
 

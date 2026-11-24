@@ -52,7 +52,8 @@ const getTeams = asyncHandler(async (req, res) => {
       .populate('tournament', 'name')
       .sort(sort)
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
     Team.countDocuments(filter),
   ]);
 
@@ -63,7 +64,8 @@ const getTeams = asyncHandler(async (req, res) => {
 const getTeamById = asyncHandler(async (req, res) => {
   const team = await Team.findById(req.params.id)
     .populate('captain', 'name role photo')
-    .populate('tournament', 'name logo');
+    .populate('tournament', 'name logo')
+    .lean();
 
   if (!team) throw ApiError.notFound('Team not found');
   res.json({ success: true, data: team });

@@ -46,7 +46,7 @@ const getTournaments = asyncHandler(async (req, res) => {
   if (req.localityId) filter.locality = req.localityId;
 
   const [tournaments, total] = await Promise.all([
-    Tournament.find(filter).sort(sort).skip(skip).limit(limit).populate('teams', 'name shortName logo'),
+    Tournament.find(filter).sort(sort).skip(skip).limit(limit).populate('teams', 'name shortName logo').lean(),
     Tournament.countDocuments(filter),
   ]);
 
@@ -55,7 +55,7 @@ const getTournaments = asyncHandler(async (req, res) => {
 
 // GET /api/tournaments/:id
 const getTournamentById = asyncHandler(async (req, res) => {
-  const tournament = await Tournament.findById(req.params.id).populate('teams', 'name shortName logo');
+  const tournament = await Tournament.findById(req.params.id).populate('teams', 'name shortName logo').lean();
   if (!tournament) throw ApiError.notFound('Tournament not found');
   res.json({ success: true, data: tournament });
 });

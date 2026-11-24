@@ -6,7 +6,6 @@ import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, finalize, of, switchMap } from 'rxjs';
 import { MatchService } from '../../core/services/match.service';
-//import { TeamService } from '../../core/services/team.service';
 import { SocketService } from '../../core/services/socket.service';
 import { AuthService } from '../../core/services/auth.service';
 import { NotificationService } from '../../core/services/notification.service';
@@ -30,7 +29,6 @@ export class LiveMatch implements OnDestroy {
   private location = inject(Location);
   private router = inject(Router);
   private matchService = inject(MatchService);
-  //private teamService = inject(TeamService);
   private socket = inject(SocketService);
   private auth = inject(AuthService);
   private notifications = inject(NotificationService);

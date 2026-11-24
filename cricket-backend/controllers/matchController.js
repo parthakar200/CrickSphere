@@ -78,7 +78,8 @@ const getMatches = asyncHandler(async (req, res) => {
       .populate('tournament', 'name')
       .sort(sort)
       .skip(skip)
-      .limit(limit),
+      .limit(limit)
+      .lean(),
     Match.countDocuments(filter),
   ]);
 
@@ -96,7 +97,8 @@ const getMatchById = asyncHandler(async (req, res) => {
     .populate({
       path: 'innings',
       populate: { path: 'currentStrikerBatsman currentNonStrikerBatsman currentBowler', select: 'name' },
-    });
+    })
+    .lean();
 
   if (!match) throw ApiError.notFound('Match not found');
   res.json({ success: true, data: match });

@@ -1,10 +1,11 @@
 const { Locality, Team, Player, Match, Tournament, User } = require('../models');
+const { invalidateLocalityCache } = require('../middleware/locality');
 const ApiError = require('../utils/ApiError');
 const asyncHandler = require('../utils/asyncHandler');
 
 // GET /api/localities
 const getLocalities = asyncHandler(async (req, res) => {
-  let localities = await Locality.find({ isActive: { $ne: false } }).sort({ isDefault: -1, name: 1 });
+  let localities = await Locality.find({ isActive: { $ne: false } }).sort({ isDefault: -1, name: 1 }).lean();
 
   // Self-healing: if no localities exist yet, create the defaults now.
   if (localities.length === 0) {
@@ -121,6 +122,8 @@ const createLocality = asyncHandler(async (req, res) => {
     isActive: true,
     isDefault: false,
   });
+
+  invalidateLocalityCache();
 
   let createdAdmin = null;
   let createdScorer = null;

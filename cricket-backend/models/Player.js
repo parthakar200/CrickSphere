@@ -35,6 +35,8 @@ const playerSchema = new Schema(
 );
 
 playerSchema.index({ name: 'text' });
+playerSchema.index({ locality: 1, role: 1 });
+playerSchema.index({ locality: 1, name: 1 });
 
 module.exports = mongoose.model('Player', playerSchema);
 module.exports.PLAYER_ROLES = PLAYER_ROLES;
