@@ -96,11 +96,8 @@ export class Topbar {
   switchLocality(loc: Locality): void {
     this.localityService.setLocality(loc);
     this.localityMenuOpen.set(false);
-    this.notifications.success(`Switched to ${loc.name}`);
-    const currentUrl = this.router.url;
-    this.router.navigateByUrl('/', { skipLocationChange: true }).then(() => {
-      this.router.navigateByUrl(currentUrl);
-    });
+    // Reload immediately so all active signals, queries, and components refresh with the new locality
+    window.location.reload();
   }
 
   /** Called on every keystroke — updates the local signal and feeds the debouncer. */

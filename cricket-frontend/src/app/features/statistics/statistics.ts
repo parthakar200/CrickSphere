@@ -1,9 +1,10 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, of, switchMap } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { StatisticsService } from '../../core/services/statistics.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { LocalityService } from '../../core/services/locality.service';
 import { AppChart } from '../../shared/components/chart/chart';
 
 const EMPTY_BATTING = { topRunScorers: [], runDistribution: [], strikeRateAnalysis: [] };
@@ -21,33 +22,42 @@ const PALETTE = ['#3B82F6', '#8B5CF6', '#10B981', '#F59E0B', '#EF4444', '#06B6D4
 export class Statistics {
   private statisticsService = inject(StatisticsService);
   private tournamentService = inject(TournamentService);
+  private localityService = inject(LocalityService);
 
   selectedTournament = signal<string>('');
   activeSection = signal<'batting' | 'bowling' | 'team'>('batting');
 
-  tournaments = toSignal(this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
+  private tournamentId$ = toObservable(this.selectedTournament);
+
+  tournaments = toSignal(
+    this.localityId$.pipe(
+      switchMap(() => this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))))
+    ),
+    { initialValue: null }
+  );
+
+  private querySource$ = combineLatest([this.localityId$, this.tournamentId$]);
 
   batting = toSignal(
-    toObservable(this.selectedTournament).pipe(
-      switchMap((id) => this.statisticsService.getBattingAnalytics(id || undefined)),
+    this.querySource$.pipe(
+      switchMap(([, tournamentId]) => this.statisticsService.getBattingAnalytics(tournamentId || undefined)),
       catchError(() => of(EMPTY_BATTING))
     ),
     { initialValue: EMPTY_BATTING }
   );
 
   bowling = toSignal(
-    toObservable(this.selectedTournament).pipe(
-      switchMap((id) => this.statisticsService.getBowlingAnalytics(id || undefined)),
+    this.querySource$.pipe(
+      switchMap(([, tournamentId]) => this.statisticsService.getBowlingAnalytics(tournamentId || undefined)),
       catchError(() => of(EMPTY_BOWLING))
     ),
     { initialValue: EMPTY_BOWLING }
   );
 
   team = toSignal(
-    toObservable(this.selectedTournament).pipe(
-      switchMap((id) => this.statisticsService.getTeamAnalytics(id || undefined)),
+    this.querySource$.pipe(
+      switchMap(([, tournamentId]) => this.statisticsService.getTeamAnalytics(tournamentId || undefined)),
       catchError(() => of(EMPTY_TEAM))
     ),
     { initialValue: EMPTY_TEAM }

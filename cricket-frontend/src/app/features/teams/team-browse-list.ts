@@ -1,8 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
 import { TeamService } from '../../core/services/team.service';
+import { LocalityService } from '../../core/services/locality.service';
 import { Team } from '../../core/models';
 
 @Component({
@@ -13,10 +14,16 @@ import { Team } from '../../core/models';
 })
 export class TeamBrowseList {
   private teamService = inject(TeamService);
+  private localityService = inject(LocalityService);
 
-  private result = toSignal(this.teamService.list({ limit: 200, isActive: true }).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
+
+  private result = toSignal(
+    this.localityId$.pipe(
+      switchMap(() => this.teamService.list({ limit: 200, isActive: true }).pipe(catchError(() => of(null))))
+    ),
+    { initialValue: null }
+  );
 
   teams = () => this.result()?.data ?? [];
 

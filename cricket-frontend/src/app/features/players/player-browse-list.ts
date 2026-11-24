@@ -1,8 +1,9 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
 import { PlayerService } from '../../core/services/player.service';
+import { LocalityService } from '../../core/services/locality.service';
 import { Player } from '../../core/models';
 
 @Component({
@@ -13,15 +14,16 @@ import { Player } from '../../core/models';
 })
 export class PlayerBrowseList {
   private playerService = inject(PlayerService);
+  private localityService = inject(LocalityService);
 
   searchTerm = signal('');
   roleFilter = signal<'' | Player['role']>('');
 
-  private filters = computed(() => ({ search: this.searchTerm(), role: this.roleFilter() }));
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
 
   private result = toSignal(
-    this.playerService.list({ limit: 100 }).pipe(
-      catchError(() => of(null))
+    this.localityId$.pipe(
+      switchMap(() => this.playerService.list({ limit: 100 }).pipe(catchError(() => of(null))))
     ),
     { initialValue: null }
   );

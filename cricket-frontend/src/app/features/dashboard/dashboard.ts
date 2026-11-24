@@ -1,11 +1,12 @@
 import { Component, computed, inject } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
-import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { catchError, of, switchMap } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { StatisticsService, StatisticsOverview } from '../../core/services/statistics.service';
 import { LiveTickerService } from '../../core/services/live-ticker.service';
+import { LocalityService } from '../../core/services/locality.service';
 import { AuthService } from '../../core/services/auth.service';
 import { StatCard } from '../../shared/components/stat-card/stat-card';
 import { AppChart } from '../../shared/components/chart/chart';
@@ -31,23 +32,36 @@ const EMPTY_OVERVIEW: StatisticsOverview = {
 export class Dashboard {
   private statistics = inject(StatisticsService);
   private liveTicker = inject(LiveTickerService);
+  private localityService = inject(LocalityService);
   auth = inject(AuthService);
 
-  overview = toSignal(this.statistics.getOverview().pipe(catchError(() => of(EMPTY_OVERVIEW))), {
-    initialValue: EMPTY_OVERVIEW,
-  });
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
 
-  liveMatches = toSignal(this.liveTicker.getLiveMatches().pipe(catchError(() => of([]))), {
-    initialValue: [],
-  });
+  overview = toSignal(
+    this.localityId$.pipe(
+      switchMap(() => this.statistics.getOverview().pipe(catchError(() => of(EMPTY_OVERVIEW))))
+    ),
+    { initialValue: EMPTY_OVERVIEW }
+  );
+
+  liveMatches = toSignal(
+    this.localityId$.pipe(
+      switchMap(() => this.liveTicker.getLiveMatches().pipe(catchError(() => of([]))))
+    ),
+    { initialValue: [] }
+  );
 
   battingAnalytics = toSignal(
-    this.statistics.getBattingAnalytics().pipe(catchError(() => of({ topRunScorers: [] }))),
+    this.localityId$.pipe(
+      switchMap(() => this.statistics.getBattingAnalytics().pipe(catchError(() => of({ topRunScorers: [] }))))
+    ),
     { initialValue: { topRunScorers: [] } }
   );
 
   bowlingAnalytics = toSignal(
-    this.statistics.getBowlingAnalytics().pipe(catchError(() => of({ topWicketTakers: [] }))),
+    this.localityId$.pipe(
+      switchMap(() => this.statistics.getBowlingAnalytics().pipe(catchError(() => of({ topWicketTakers: [] }))))
+    ),
     { initialValue: { topWicketTakers: [] } }
   );
 

@@ -4,6 +4,7 @@ import { toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap } from 'rxjs';
 import { LeaderboardPlayerSummary, LeaderboardRow, LeaderboardService } from '../../core/services/leaderboard.service';
 import { TournamentService } from '../../core/services/tournament.service';
+import { LocalityService } from '../../core/services/locality.service';
 import { QueryParams } from '../../core/services/api.service';
 import {
   normalizeBattingRows,
@@ -46,6 +47,7 @@ const TAB_LABELS: Record<LeaderboardTab, string> = {
 export class Leaderboards {
   private leaderboardService = inject(LeaderboardService);
   private tournamentService = inject(TournamentService);
+  private localityService = inject(LocalityService);
 
   tabs = Object.keys(TAB_LABELS) as LeaderboardTab[];
   tabLabel = (tab: LeaderboardTab) => TAB_LABELS[tab];
@@ -58,11 +60,17 @@ export class Leaderboards {
   minWickets = signal(5);
   fieldingType = signal<'all' | 'catches' | 'runOuts' | 'stumpings'>('all');
 
-  tournaments = toSignal(this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
+
+  tournaments = toSignal(
+    this.localityId$.pipe(
+      switchMap(() => this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))))
+    ),
+    { initialValue: null }
+  );
 
   private fetchParams = computed(() => ({
+    locality: this.localityService.selectedLocalityId(),
     tab: this.activeTab(),
     tournament: this.selectedTournament() || undefined,
     minBalls: this.minBalls(),
