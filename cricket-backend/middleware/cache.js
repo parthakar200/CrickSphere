@@ -24,7 +24,8 @@ function apiCache(durationSeconds = 30) {
 
     if (cached && Date.now() < cached.expireAt) {
       res.set('X-Cache', 'HIT');
-      res.set('Cache-Control', `public, max-age=${Math.min(durationSeconds, 15)}, stale-while-revalidate=60`);
+      res.set('Vary', 'X-Locality-Id, X-Locality-Slug, Authorization, Accept-Encoding');
+      res.set('Cache-Control', 'no-cache, private');
       res.set('Content-Type', 'application/json; charset=utf-8');
       return res.send(cached.body);
     }
@@ -36,7 +37,8 @@ function apiCache(durationSeconds = 30) {
           body,
           expireAt: Date.now() + durationSeconds * 1000,
         });
-        res.set('Cache-Control', `public, max-age=${Math.min(durationSeconds, 15)}, stale-while-revalidate=60`);
+        res.set('Vary', 'X-Locality-Id, X-Locality-Slug, Authorization, Accept-Encoding');
+        res.set('Cache-Control', 'no-cache, private');
       }
       res.set('X-Cache', 'MISS');
       return sendResponse(body);

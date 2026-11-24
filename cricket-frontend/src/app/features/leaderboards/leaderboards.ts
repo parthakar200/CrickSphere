@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, of, switchMap, tap } from 'rxjs';
 import { LeaderboardPlayerSummary, LeaderboardRow, LeaderboardService } from '../../core/services/leaderboard.service';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -61,6 +61,12 @@ export class Leaderboards {
   fieldingType = signal<'all' | 'catches' | 'runOuts' | 'stumpings'>('all');
 
   private localityId$ = toObservable(this.localityService.selectedLocalityId);
+
+  constructor() {
+    this.localityId$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.selectedTournament.set('');
+    });
+  }
 
   tournaments = toSignal(
     this.localityId$.pipe(

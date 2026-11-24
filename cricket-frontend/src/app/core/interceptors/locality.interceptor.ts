@@ -29,7 +29,11 @@ export const localityInterceptor: HttpInterceptorFn = (req, next) => {
 
   if (localityId && !req.headers.has('x-locality-id')) {
     const localityReq = req.clone({
-      setHeaders: { 'x-locality-id': localityId },
+      setHeaders: {
+        'x-locality-id': localityId,
+        'Cache-Control': 'no-cache',
+        'Pragma': 'no-cache',
+      },
     });
     return next(localityReq);
   }

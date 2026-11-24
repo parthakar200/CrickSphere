@@ -1,14 +1,14 @@
 import { Component, computed, inject, signal, DestroyRef, HostListener } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { Store } from '@ngrx/store';
-import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { toSignal, toObservable, takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { interval, startWith, switchMap, filter, map, Subject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { AuthService } from '../../core/services/auth.service';
 import { LocalityService } from '../../core/services/locality.service';
 import { NotificationService } from '../../core/services/notification.service';
 import { LiveTickerService } from '../../core/services/live-ticker.service';
 import { uiFeature, toggleTheme } from '../../state/ui/ui.state';
-import { Team, Locality } from '../../core/models';
+import { Team, Locality, Match } from '../../core/models';
 
 @Component({
   selector: 'app-topbar',
@@ -68,13 +68,19 @@ export class Topbar {
     });
   }
 
-  // Poll live matches every 20 s
+  private localityId$ = toObservable(this.localityService.selectedLocalityId);
+
+  // Poll live matches every 20 s and re-trigger immediately on village change
   liveMatches = toSignal(
-    interval(20000).pipe(
-      startWith(0),
-      switchMap(() => this.liveTicker.getLiveMatches())
+    this.localityId$.pipe(
+      switchMap(() =>
+        interval(20000).pipe(
+          startWith(0),
+          switchMap(() => this.liveTicker.getLiveMatches())
+        )
+      )
     ),
-    { initialValue: [] }
+    { initialValue: [] as Match[] }
   );
 
   teamLabel(team: Team | string): string {
@@ -111,8 +117,20 @@ export class Topbar {
   switchLocality(loc: Locality): void {
     this.localityService.setLocality(loc);
     this.localityMenuOpen.set(false);
-    // Reload immediately so all active signals, queries, and components refresh with the new locality
-    window.location.reload();
+    // If user is currently on an entity detail subpage (e.g. /matches/:id/live or /teams/:id),
+    // navigate to the main list since the entity belongs to the previous village
+    const currentUrl = this.router.url;
+    if (
+      currentUrl.includes('/matches/') ||
+      currentUrl.includes('/teams/') ||
+      currentUrl.includes('/players/') ||
+      currentUrl.includes('/tournaments/')
+    ) {
+      const segments = currentUrl.split('/').filter(Boolean);
+      if (segments.length > 1) {
+        this.router.navigate(['/' + segments[0]]);
+      }
+    }
   }
 
   /** Called on every keystroke — updates the local signal and feeds the debouncer. */

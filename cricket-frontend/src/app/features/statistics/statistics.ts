@@ -1,5 +1,5 @@
 import { Component, computed, inject, signal } from '@angular/core';
-import { toObservable, toSignal } from '@angular/core/rxjs-interop';
+import { takeUntilDestroyed, toObservable, toSignal } from '@angular/core/rxjs-interop';
 import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { StatisticsService } from '../../core/services/statistics.service';
@@ -29,6 +29,12 @@ export class Statistics {
 
   private localityId$ = toObservable(this.localityService.selectedLocalityId);
   private tournamentId$ = toObservable(this.selectedTournament);
+
+  constructor() {
+    this.localityId$.pipe(takeUntilDestroyed()).subscribe(() => {
+      this.selectedTournament.set('');
+    });
+  }
 
   tournaments = toSignal(
     this.localityId$.pipe(
