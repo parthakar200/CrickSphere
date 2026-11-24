@@ -38,7 +38,12 @@ const getPlayers = asyncHandler(async (req, res) => {
   if (req.localityId) filter.locality = req.localityId;
 
   const [players, total] = await Promise.all([
-    Player.find(filter).sort(sort).skip(skip).limit(limit).lean(),
+    Player.find(filter)
+      .select('name photo role battingStyle bowlingStyle jerseyNumber isActive locality')
+      .sort(sort)
+      .skip(skip)
+      .limit(limit)
+      .lean(),
     Player.countDocuments(filter),
   ]);
 

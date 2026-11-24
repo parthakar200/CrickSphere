@@ -11,6 +11,7 @@ const rateLimit = require('express-rate-limit');
 const { clientUrl, rateLimit: rateLimitConfig, env } = require('./config/env');
 const { notFoundHandler, errorHandler } = require('./middleware/errorHandler');
 const { resolveLocality } = require('./middleware/locality');
+const { apiCache, autoInvalidateCache } = require('./middleware/cache');
 const logger = require('./utils/logger');
 
 const authRoutes = require('./routes/authRoutes');
@@ -83,6 +84,8 @@ app.get('/health', (req, res) => {
 
 // ---- API routes ----
 app.use(resolveLocality);
+app.use(autoInvalidateCache);
+app.use('/api', apiCache(30));
 app.use('/api/localities', localityRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/teams', teamRoutes);

@@ -3,6 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, tap, map, catchError, of } from 'rxjs';
 import { Locality } from '../models/locality.model';
 import { ApiResponse } from '../models/api.model';
+import { ApiService } from './api.service';
 import { environment } from '../../environments/environment';
 
 const STORAGE_KEY = 'cricket_selected_locality';
@@ -19,6 +20,7 @@ export interface CreateLocalityPayload {
 @Injectable({ providedIn: 'root' })
 export class LocalityService {
   private http = inject(HttpClient);
+  private api = inject(ApiService);
   private baseUrl = environment.apiUrl;
 
   private localitiesSignal = signal<Locality[]>([]);
@@ -101,6 +103,7 @@ export class LocalityService {
     } catch {
       // localStorage may fail in private mode
     }
+    this.api.clearCache();
   }
 
   setLocalityById(id: string): void {
