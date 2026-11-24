@@ -61,6 +61,18 @@
     }
   </nav>
 
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading leaderboards...</p>
+    </div>
+  } @else if (rawRows().length === 0) {
+    <div class="app-empty-state card-flat">
+      <span class="material-icons">military_tech</span>
+      <h3>No data available</h3>
+      <p>No leaderboard records found for this selection.</p>
+    </div>
+  } @else {
   <div class="leaderboards__table-wrap">
     @switch (activeTab()) {
     @case ('most-runs') {
@@ -285,4 +297,5 @@
     }
     }
   </div>
+  }
 </div>

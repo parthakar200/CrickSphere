@@ -2,7 +2,7 @@ import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 import { TournamentService } from '../../core/services/tournament.service';
 import { LocalityService } from '../../core/services/locality.service';
 import { Tournament } from '../../core/models';
@@ -20,12 +20,22 @@ export class TournamentBrowseList {
   private localityService = inject(LocalityService);
 
   activeTab = signal<TournamentTab>('upcoming');
+  isLoading = signal(true);
 
   private localityId$ = toObservable(this.localityService.selectedLocalityId);
 
   private result = toSignal(
     this.localityId$.pipe(
-      switchMap(() => this.tournamentService.list({ limit: 100 }).pipe(catchError(() => of(null))))
+      tap(() => this.isLoading.set(true)),
+      switchMap(() =>
+        this.tournamentService.list({ limit: 100 }).pipe(
+          tap(() => this.isLoading.set(false)),
+          catchError(() => {
+            this.isLoading.set(false);
+            return of(null);
+          })
+        )
+      )
     ),
     { initialValue: null }
   );

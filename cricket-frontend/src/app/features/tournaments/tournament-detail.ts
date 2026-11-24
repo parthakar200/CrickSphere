@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { DatePipe, Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 import { TournamentService } from '../../core/services/tournament.service';
 import { MatchService } from '../../core/services/match.service';
 import { Team } from '../../core/models';
@@ -30,9 +30,20 @@ export class TournamentDetail {
     }
   }
 
-  tournamentResult = toSignal(this.tournamentService.getById(this.tournamentId).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  isLoading = signal(true);
+
+  tournamentResult = toSignal(
+    this.tournamentService.getById(this.tournamentId).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(() => {
+        this.isLoading.set(false);
+        return of(null);
+      })
+    ),
+    {
+      initialValue: null,
+    }
+  );
   tournament = () => this.tournamentResult()?.data ?? null;
 
   dashboardResult = toSignal(

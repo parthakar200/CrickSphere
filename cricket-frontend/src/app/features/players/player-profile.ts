@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { DecimalPipe, Location } from '@angular/common';
 import { ActivatedRoute, Router } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 import { PlayerService } from '../../core/services/player.service';
 
 @Component({
@@ -27,9 +27,20 @@ export class PlayerProfile {
     }
   }
 
-  result = toSignal(this.playerService.getById(this.playerId).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  isLoading = signal(true);
+
+  result = toSignal(
+    this.playerService.getById(this.playerId).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(() => {
+        this.isLoading.set(false);
+        return of(null);
+      })
+    ),
+    {
+      initialValue: null,
+    }
+  );
 
   player = () => this.result()?.data?.player ?? null;
   careerStats = () => this.result()?.data?.careerStats ?? null;

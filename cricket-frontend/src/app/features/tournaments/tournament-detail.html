@@ -1,4 +1,9 @@
-@if (tournament(); as t) {
+@if (isLoading()) {
+  <div class="app-loading-state">
+    <div class="app-spinner"></div>
+    <p>Loading tournament...</p>
+  </div>
+} @else if (tournament(); as t) {
   <div class="tournament-detail">
     <button type="button" class="page-back-btn" (click)="goBack()">
       <span class="material-icons">arrow_back</span>
@@ -81,5 +86,9 @@
     </section>
   </div>
 } @else {
-  <p>Loading tournament...</p>
+  <div class="app-empty-state card-flat">
+    <span class="material-icons">emoji_events</span>
+    <h3>No data available</h3>
+    <p>Tournament not found.</p>
+  </div>
 }

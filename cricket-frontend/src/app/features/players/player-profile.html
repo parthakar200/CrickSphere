@@ -1,4 +1,9 @@
-@if (player(); as p) {
+@if (isLoading()) {
+  <div class="app-loading-state">
+    <div class="app-spinner"></div>
+    <p>Loading player profile...</p>
+  </div>
+} @else if (player(); as p) {
   <div class="player-profile">
     <button type="button" class="page-back-btn" (click)="goBack()">
       <span class="material-icons">arrow_back</span>
@@ -90,5 +95,9 @@
     }
   </div>
 } @else {
-  <p>Loading player...</p>
+  <div class="app-empty-state card-flat">
+    <span class="material-icons">person_off</span>
+    <h3>No data available</h3>
+    <p>Player not found.</p>
+  </div>
 }

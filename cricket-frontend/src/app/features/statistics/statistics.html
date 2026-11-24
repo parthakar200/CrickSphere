@@ -28,6 +28,12 @@
     </button>
   </nav>
 
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading statistics...</p>
+    </div>
+  } @else {
   @switch (activeSection()) {
     @case ('batting') {
       <div class="statistics__grid">
@@ -73,5 +79,6 @@
         </div>
       </div>
     }
+  }
   }
 </div>

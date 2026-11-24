@@ -4,10 +4,19 @@
     <p>Live matches update automatically. Scheduled matches need a toss before scoring can begin.</p>
   </header>
 
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading matches...</p>
+    </div>
+  } @else {
   <section>
     <h2 class="font-display">Live now</h2>
     @if (liveMatches().length === 0) {
-      <p class="live-list__empty">No matches are live right now.</p>
+      <div class="app-empty-state" style="padding: 1.5rem 1rem;">
+        <span class="material-icons" style="font-size: 32px;">sports_cricket</span>
+        <p>No matches are live right now.</p>
+      </div>
     } @else {
       <div class="live-list__grid">
         @for (match of liveMatches(); track match._id) {
@@ -34,7 +43,10 @@
   <section>
     <h2 class="font-display">Scheduled (awaiting toss)</h2>
     @if (scheduledMatches().length === 0) {
-      <p class="live-list__empty">No scheduled matches awaiting toss.</p>
+      <div class="app-empty-state" style="padding: 1.5rem 1rem;">
+        <span class="material-icons" style="font-size: 32px;">schedule</span>
+        <p>No scheduled matches awaiting toss.</p>
+      </div>
     } @else {
       <div class="live-list__grid">
         @for (match of scheduledMatches(); track match._id) {
@@ -89,5 +101,6 @@
         }
       </div>
     </section>
+  }
   }
 </div>

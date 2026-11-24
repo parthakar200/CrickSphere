@@ -1,4 +1,9 @@
-@if (team(); as t) {
+@if (isLoading()) {
+  <div class="app-loading-state">
+    <div class="app-spinner"></div>
+    <p>Loading team...</p>
+  </div>
+} @else if (team(); as t) {
   <div class="team-detail">
     <button type="button" class="page-back-btn" (click)="goBack()">
       <span class="material-icons">arrow_back</span>
@@ -44,5 +49,9 @@
     }
   </div>
 } @else {
-  <p>Loading team...</p>
+  <div class="app-empty-state card-flat">
+    <span class="material-icons">groups</span>
+    <h3>No data available</h3>
+    <p>Team not found.</p>
+  </div>
 }

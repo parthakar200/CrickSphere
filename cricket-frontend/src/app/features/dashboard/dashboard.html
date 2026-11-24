@@ -16,14 +16,21 @@
     }
   </header>
 
-  <section class="dashboard__stats">
-    <app-stat-card label="Total Players" [value]="overview().totalPlayers" icon="sports_cricket" accent="electric" />
-    <app-stat-card label="Total Teams" [value]="overview().totalTeams" icon="groups" accent="purple" />
-    <app-stat-card label="Matches Played" [value]="overview().completedMatches" icon="sports" accent="emerald" />
-    <app-stat-card label="Total Runs" [value]="overview().totalRuns" icon="trending_up" accent="electric" />
-    <app-stat-card label="Total Wickets" [value]="overview().totalWickets" icon="sports_baseball" accent="crimson" />
-    <app-stat-card label="Total Sixes" [value]="overview().totalSixes" icon="bolt" accent="amber" />
-  </section>
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading dashboard...</p>
+    </div>
+  } @else {
+    <section class="dashboard__stats">
+      <app-stat-card label="Total Players" [value]="overview().totalPlayers" icon="sports_cricket" accent="electric" />
+      <app-stat-card label="Total Teams" [value]="overview().totalTeams" icon="groups" accent="purple" />
+      <app-stat-card label="Matches Played" [value]="overview().completedMatches" icon="sports" accent="emerald" />
+      <app-stat-card label="Total Runs" [value]="overview().totalRuns" icon="trending_up" accent="electric" />
+      <app-stat-card label="Total Wickets" [value]="overview().totalWickets" icon="sports_baseball" accent="crimson" />
+      <app-stat-card label="Total Sixes" [value]="overview().totalSixes" icon="bolt" accent="amber" />
+    </section>
+  }
 
   @if (liveMatches().length > 0) {
     <section class="dashboard__live">

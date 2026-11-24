@@ -1,8 +1,8 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, signal } from '@angular/core';
 import { Location } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of } from 'rxjs';
+import { catchError, of, tap } from 'rxjs';
 import { TeamService } from '../../core/services/team.service';
 import { TeamRosterPlayer } from '../../core/models';
 
@@ -28,9 +28,20 @@ export class TeamDetail {
     }
   }
 
-  result = toSignal(this.teamService.getById(this.teamId).pipe(catchError(() => of(null))), {
-    initialValue: null,
-  });
+  isLoading = signal(true);
+
+  result = toSignal(
+    this.teamService.getById(this.teamId).pipe(
+      tap(() => this.isLoading.set(false)),
+      catchError(() => {
+        this.isLoading.set(false);
+        return of(null);
+      })
+    ),
+    {
+      initialValue: null,
+    }
+  );
 
   team = () => this.result()?.data ?? null;
 

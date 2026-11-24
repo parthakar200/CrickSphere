@@ -1,8 +1,8 @@
-import { Component, computed, inject } from '@angular/core';
+import { Component, computed, inject, signal } from '@angular/core';
 import { DatePipe } from '@angular/common';
 import { RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { StatisticsService, StatisticsOverview } from '../../core/services/statistics.service';
 import { LiveTickerService } from '../../core/services/live-ticker.service';
@@ -35,11 +35,21 @@ export class Dashboard {
   private localityService = inject(LocalityService);
   auth = inject(AuthService);
 
+  isLoading = signal(true);
   private localityId$ = toObservable(this.localityService.selectedLocalityId);
 
   overview = toSignal(
     this.localityId$.pipe(
-      switchMap(() => this.statistics.getOverview().pipe(catchError(() => of(EMPTY_OVERVIEW))))
+      tap(() => this.isLoading.set(true)),
+      switchMap(() =>
+        this.statistics.getOverview().pipe(
+          tap(() => this.isLoading.set(false)),
+          catchError(() => {
+            this.isLoading.set(false);
+            return of(EMPTY_OVERVIEW);
+          })
+        )
+      )
     ),
     { initialValue: EMPTY_OVERVIEW }
   );

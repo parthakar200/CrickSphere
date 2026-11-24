@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { DecimalPipe } from '@angular/common';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 import { LeaderboardPlayerSummary, LeaderboardRow, LeaderboardService } from '../../core/services/leaderboard.service';
 import { TournamentService } from '../../core/services/tournament.service';
 import { LocalityService } from '../../core/services/locality.service';
@@ -80,14 +80,25 @@ export class Leaderboards {
     limit: 50,
   }));
 
+  isLoading = signal(true);
+
   // Re-fetches whenever the active tab OR any filter signal changes, via one
   // combined params signal rather than nested observables. Each tab's own
   // filter inputs (minBalls/minOvers/minWickets/fieldingType) are harmless
   // extra query params on tabs that ignore them — the backend simply
   // doesn't read params it doesn't expect for a given endpoint.
-  private rawRows = toSignal(
+  rawRows = toSignal(
     toObservable(this.fetchParams).pipe(
-      switchMap(({ tab, ...params }) => this.fetchForTab(tab, params).pipe(catchError(() => of([]))))
+      tap(() => this.isLoading.set(true)),
+      switchMap(({ tab, ...params }) =>
+        this.fetchForTab(tab, params).pipe(
+          tap(() => this.isLoading.set(false)),
+          catchError(() => {
+            this.isLoading.set(false);
+            return of([]);
+          })
+        )
+      )
     ),
     { initialValue: [] as LeaderboardRow[] }
   );

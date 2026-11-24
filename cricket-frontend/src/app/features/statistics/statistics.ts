@@ -1,6 +1,6 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, combineLatest, of, switchMap } from 'rxjs';
+import { catchError, combineLatest, of, switchMap, tap } from 'rxjs';
 import { ChartConfiguration } from 'chart.js';
 import { StatisticsService } from '../../core/services/statistics.service';
 import { TournamentService } from '../../core/services/tournament.service';
@@ -37,12 +37,21 @@ export class Statistics {
     { initialValue: null }
   );
 
+  isLoading = signal(true);
   private querySource$ = combineLatest([this.localityId$, this.tournamentId$]);
 
   batting = toSignal(
     this.querySource$.pipe(
-      switchMap(([, tournamentId]) => this.statisticsService.getBattingAnalytics(tournamentId || undefined)),
-      catchError(() => of(EMPTY_BATTING))
+      tap(() => this.isLoading.set(true)),
+      switchMap(([, tournamentId]) =>
+        this.statisticsService.getBattingAnalytics(tournamentId || undefined).pipe(
+          tap(() => this.isLoading.set(false)),
+          catchError(() => {
+            this.isLoading.set(false);
+            return of(EMPTY_BATTING);
+          })
+        )
+      )
     ),
     { initialValue: EMPTY_BATTING }
   );

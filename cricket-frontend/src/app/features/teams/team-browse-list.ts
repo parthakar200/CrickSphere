@@ -1,7 +1,7 @@
 import { Component, computed, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { toObservable, toSignal } from '@angular/core/rxjs-interop';
-import { catchError, of, switchMap } from 'rxjs';
+import { catchError, of, switchMap, tap } from 'rxjs';
 import { TeamService } from '../../core/services/team.service';
 import { LocalityService } from '../../core/services/locality.service';
 import { Team } from '../../core/models';
@@ -16,11 +16,21 @@ export class TeamBrowseList {
   private teamService = inject(TeamService);
   private localityService = inject(LocalityService);
 
+  isLoading = signal(true);
   private localityId$ = toObservable(this.localityService.selectedLocalityId);
 
   private result = toSignal(
     this.localityId$.pipe(
-      switchMap(() => this.teamService.list({ limit: 200, isActive: true }).pipe(catchError(() => of(null))))
+      tap(() => this.isLoading.set(true)),
+      switchMap(() =>
+        this.teamService.list({ limit: 200, isActive: true }).pipe(
+          tap(() => this.isLoading.set(false)),
+          catchError(() => {
+            this.isLoading.set(false);
+            return of(null);
+          })
+        )
+      )
     ),
     { initialValue: null }
   );

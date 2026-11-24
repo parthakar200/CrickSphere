@@ -23,10 +23,16 @@
     </select>
   </div>
 
-  @if (players().length === 0) {
-    <div class="player-browse__empty">
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading players...</p>
+    </div>
+  } @else if (players().length === 0) {
+    <div class="app-empty-state">
       <span class="material-icons">sports_cricket</span>
-      <p>No players found.</p>
+      <h3>No data available</h3>
+      <p>No players found for this selection.</p>
     </div>
   } @else {
     <div class="player-browse__grid">

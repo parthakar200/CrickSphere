@@ -39,9 +39,15 @@
     </button>
   </div>
 
-  @if (displayedTournaments().length === 0) {
-    <div class="tournament-browse__empty card-flat">
+  @if (isLoading()) {
+    <div class="app-loading-state">
+      <div class="app-spinner"></div>
+      <p>Loading tournaments...</p>
+    </div>
+  } @else if (displayedTournaments().length === 0) {
+    <div class="app-empty-state card-flat">
       <span class="material-icons">emoji_events</span>
+      <h3>No data available</h3>
       <p>
         @if (activeTab() === 'upcoming') {
           No upcoming or ongoing tournaments right now.
