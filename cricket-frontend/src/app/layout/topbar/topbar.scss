@@ -192,6 +192,13 @@
   }
 }
 
+.topbar__dropdown-backdrop {
+  position: fixed;
+  inset: 0;
+  z-index: 99;
+  background: transparent;
+}
+
 .topbar__locality-menu {
   position: absolute;
   top: calc(100% + 8px);
@@ -200,9 +207,9 @@
   background: var(--color-surface-raised);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-card);
-  box-shadow: var(--shadow-card);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
   padding: 0.5rem;
-  z-index: 40;
+  z-index: 100;
 }
 
 .topbar__locality-menu-title {
@@ -490,6 +497,17 @@
     .locality-icon {
       font-size: 15px;
     }
+  }
+
+  .topbar__locality-menu {
+    position: fixed;
+    top: 60px;
+    right: 0.75rem;
+    left: auto;
+    width: 240px;
+    max-width: calc(100vw - 1.5rem);
+    z-index: 100;
+    box-shadow: 0 12px 36px rgba(0, 0, 0, 0.65);
   }
 
   .topbar__icon-btn {

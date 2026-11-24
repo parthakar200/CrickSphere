@@ -1,4 +1,4 @@
-import { Component, computed, inject, signal, DestroyRef } from '@angular/core';
+import { Component, computed, inject, signal, DestroyRef, HostListener } from '@angular/core';
 import { Router, RouterLink, NavigationEnd } from '@angular/router';
 import { Store } from '@ngrx/store';
 import { toSignal, takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -81,15 +81,30 @@ export class Topbar {
     return typeof team === 'string' ? team : team.shortName;
   }
 
+  @HostListener('document:click', ['$event'])
+  onDocumentClick(event: MouseEvent): void {
+    const target = event.target as HTMLElement;
+    if (!target.closest('.topbar__locality')) {
+      this.localityMenuOpen.set(false);
+    }
+    if (!target.closest('.topbar__user')) {
+      this.userMenuOpen.set(false);
+    }
+  }
+
   toggleTheme(): void {
     this.store.dispatch(toggleTheme());
   }
 
-  toggleUserMenu(): void {
+  toggleUserMenu(event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.localityMenuOpen.set(false);
     this.userMenuOpen.update((open) => !open);
   }
 
-  toggleLocalityMenu(): void {
+  toggleLocalityMenu(event?: MouseEvent): void {
+    event?.stopPropagation();
+    this.userMenuOpen.set(false);
     this.localityMenuOpen.update((open) => !open);
   }
 

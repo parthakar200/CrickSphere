@@ -20,13 +20,14 @@
       <!-- Locality: Village Switcher ONLY for spectators. Scorers/Admins cannot change village. -->
       @if (!auth.isScorer()) {
         <div class="topbar__locality">
-          <button type="button" class="topbar__locality-btn" (click)="toggleLocalityMenu()" aria-label="Select village">
+          <button type="button" class="topbar__locality-btn" (click)="toggleLocalityMenu($event)" aria-label="Select village">
             <span class="material-icons locality-icon">location_on</span>
             <span class="locality-name">{{ localityService.selectedLocalityName() }}</span>
             <span class="material-icons locality-arrow">arrow_drop_down</span>
           </button>
 
           @if (localityMenuOpen()) {
+            <div class="topbar__dropdown-backdrop" (click)="localityMenuOpen.set(false)"></div>
             <div class="topbar__locality-menu">
               <div class="topbar__locality-menu-title">Switch Village / Locality</div>
               @for (loc of localityService.localities(); track loc._id) {
@@ -60,13 +61,14 @@
 
       @if (auth.isAuthenticated()) {
         <div class="topbar__user">
-          <button type="button" class="topbar__user-btn" (click)="toggleUserMenu()">
+          <button type="button" class="topbar__user-btn" (click)="toggleUserMenu($event)">
             <span class="topbar__avatar">{{ currentUser()?.name?.charAt(0) ?? '?' }}</span>
             <span class="topbar__user-name">{{ currentUser()?.name }}</span>
             <span class="material-icons topbar__chevron">expand_more</span>
           </button>
 
           @if (userMenuOpen()) {
+            <div class="topbar__dropdown-backdrop" (click)="userMenuOpen.set(false)"></div>
             <div class="topbar__user-menu">
               <div class="topbar__user-menu-role">{{ currentUser()?.role }}</div>
               <a routerLink="/profile" class="topbar__user-menu-item">
