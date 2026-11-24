@@ -130,6 +130,8 @@ export class Topbar {
   }
 
   logout(): void {
+    this.userMenuOpen.set(false);
     this.auth.logout();
+    this.router.navigate(['/auth/login']);
   }
 }

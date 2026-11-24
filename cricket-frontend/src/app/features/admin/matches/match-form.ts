@@ -75,6 +75,77 @@ export class MatchForm {
   inlineTeamA = signal<InlineTeamForm>(blankInlineTeam());
   inlineTeamB = signal<InlineTeamForm>(blankInlineTeam());
 
+  searchTeamA = signal('');
+  searchTeamB = signal('');
+  dropdownOpenTeamA = signal(false);
+  dropdownOpenTeamB = signal(false);
+
+  selectedTeamA = computed(() => {
+    const id = this.form.controls.teamA.value;
+    return this.allTeams().find((t) => t._id === id) || null;
+  });
+
+  selectedTeamB = computed(() => {
+    const id = this.form.controls.teamB.value;
+    return this.allTeams().find((t) => t._id === id) || null;
+  });
+
+  filteredTeamsA = computed(() => {
+    const q = this.searchTeamA().toLowerCase().trim();
+    const isTournament = this.isTournamentMode() && !!this.form.controls.tournament.value;
+    const base = isTournament
+      ? [...this.tournamentTeams(), ...this.otherTeams()]
+      : this.allTeams();
+    if (!q) return base;
+    return base.filter((t) => t.name.toLowerCase().includes(q) || t.shortName.toLowerCase().includes(q));
+  });
+
+  filteredTeamsB = computed(() => {
+    const q = this.searchTeamB().toLowerCase().trim();
+    const isTournament = this.isTournamentMode() && !!this.form.controls.tournament.value;
+    const base = isTournament
+      ? [...this.tournamentTeams(), ...this.otherTeams()]
+      : this.allTeams();
+    if (!q) return base;
+    return base.filter((t) => t.name.toLowerCase().includes(q) || t.shortName.toLowerCase().includes(q));
+  });
+
+  toggleDropdown(slot: 'A' | 'B', event?: MouseEvent): void {
+    event?.stopPropagation();
+    if (slot === 'A') {
+      this.dropdownOpenTeamB.set(false);
+      this.dropdownOpenTeamA.update((open) => !open);
+    } else {
+      this.dropdownOpenTeamA.set(false);
+      this.dropdownOpenTeamB.update((open) => !open);
+    }
+  }
+
+  selectTeam(slot: 'A' | 'B', team: Team): void {
+    if (slot === 'A') {
+      this.form.patchValue({ teamA: team._id });
+      this.dropdownOpenTeamA.set(false);
+      this.searchTeamA.set('');
+    } else {
+      this.form.patchValue({ teamB: team._id });
+      this.dropdownOpenTeamB.set(false);
+      this.searchTeamB.set('');
+    }
+  }
+
+  createFromSearch(slot: 'A' | 'B', query: string): void {
+    const short = query.replace(/[^a-zA-Z0-9]/g, '').slice(0, 4).toUpperCase() || 'NEW';
+    if (slot === 'A') {
+      this.dropdownOpenTeamA.set(false);
+      this.showInlineTeamA.set(true);
+      this.inlineTeamA.set({ name: query, shortName: short, homeGround: '', loading: false, error: '' });
+    } else {
+      this.dropdownOpenTeamB.set(false);
+      this.showInlineTeamB.set(true);
+      this.inlineTeamB.set({ name: query, shortName: short, homeGround: '', loading: false, error: '' });
+    }
+  }
+
   toggleInlineTeam(slot: 'A' | 'B'): void {
     if (slot === 'A') {
       this.showInlineTeamA.update((v) => !v);

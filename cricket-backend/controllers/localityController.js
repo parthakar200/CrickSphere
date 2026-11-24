@@ -160,8 +160,42 @@ const createLocality = asyncHandler(async (req, res) => {
   });
 });
 
+// PATCH /api/localities/:id — admin only
+const updateLocality = asyncHandler(async (req, res) => {
+  const { id } = req.params;
+  const { name, description, district, state } = req.body;
+
+  const locality = await Locality.findById(id);
+  if (!locality) throw ApiError.notFound('Village / Locality not found');
+
+  if (name && name.trim()) {
+    const cleanName = name.trim();
+    const conflict = await Locality.findOne({
+      _id: { $ne: locality._id },
+      name: { $regex: new RegExp(`^${cleanName}$`, 'i') },
+    });
+    if (conflict) {
+      throw ApiError.conflict(`A village named "${cleanName}" already exists.`);
+    }
+    locality.name = cleanName;
+    locality.slug = cleanName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
+  }
+  if (description !== undefined) locality.description = description;
+  if (district !== undefined) locality.district = district;
+  if (state !== undefined) locality.state = state;
+
+  await locality.save();
+  invalidateLocalityCache();
+
+  res.json({
+    success: true,
+    data: locality,
+  });
+});
+
 module.exports = {
   getLocalities,
   getLocalityByIdOrSlug,
   createLocality,
+  updateLocality,
 };

@@ -104,8 +104,8 @@ export const routes: Routes = [
       {
         path: 'profile',
         canActivate: [authGuard],
-        data: { section: 'profile' },
-        loadChildren: () => import('./features/placeholder/placeholder.routes').then((m) => m.PLACEHOLDER_ROUTES),
+        loadComponent: () => import('./features/profile/profile').then((m) => m.Profile),
+        title: 'Profile & Settings — CrickSphere',
       },
 
       {

@@ -96,6 +96,23 @@ export class LocalityService {
       );
   }
 
+  updateLocality(
+    id: string,
+    payload: { name?: string; district?: string; state?: string; description?: string }
+  ): Observable<Locality> {
+    return this.http.patch<ApiResponse<Locality>>(`${this.baseUrl}/localities/${id}`, payload).pipe(
+      map((res) => res.data),
+      tap((updatedLoc) => {
+        this.localitiesSignal.update((list) =>
+          list.map((loc) => (loc._id === updatedLoc._id ? updatedLoc : loc))
+        );
+        if (this.selectedLocalityId() === updatedLoc._id) {
+          this.setLocality(updatedLoc);
+        }
+      })
+    );
+  }
+
   setLocality(locality: Locality): void {
     this.selectedLocalitySignal.set(locality);
     try {

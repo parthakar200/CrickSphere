@@ -1,0 +1,136 @@
+<div class="profile-page">
+  <header class="profile-page__header">
+    <h1 class="font-display">My Profile & Settings</h1>
+    <p>Manage your account details and village information.</p>
+  </header>
+
+  <div class="profile-page__grid">
+    <!-- User Account Card -->
+    <div class="card-flat profile-card">
+      <div class="profile-card__avatar-row">
+        <div class="profile-card__avatar">
+          {{ currentUser()?.name?.charAt(0) ?? 'U' }}
+        </div>
+        <div class="profile-card__user-info">
+          <h2>{{ currentUser()?.name }}</h2>
+          <span class="profile-card__email">{{ currentUser()?.email }}</span>
+          <div class="profile-card__role-tag" [class.profile-card__role-tag--admin]="isAdmin()">
+            <span class="material-icons">{{ isAdmin() ? 'admin_panel_settings' : 'sports_score' }}</span>
+            <span>{{ isAdmin() ? 'Village Administrator' : 'Official Scorer' }}</span>
+          </div>
+        </div>
+      </div>
+
+      <div class="profile-card__meta">
+        <div class="meta-row">
+          <span class="meta-label">Assigned Village</span>
+          <span class="meta-value">{{ localityService.selectedLocalityName() }}</span>
+        </div>
+        <div class="meta-row">
+          <span class="meta-label">Access Level</span>
+          <span class="meta-value">{{ isAdmin() ? 'Full Admin Access' : 'Scoring & Live Updates' }}</span>
+        </div>
+      </div>
+
+      <div class="profile-card__actions">
+        <button type="button" class="btn-logout" (click)="logout()">
+          <span class="material-icons">logout</span>
+          Log out of account
+        </button>
+      </div>
+    </div>
+
+    <!-- Village Settings Card -->
+    <div class="card-flat profile-card profile-card--village">
+      <div class="profile-card__section-header">
+        <div class="icon-wrap" [class.icon-wrap--admin]="isAdmin()">
+          <span class="material-icons">location_city</span>
+        </div>
+        <div>
+          <h3>Village / Locality Settings</h3>
+          <p>
+            @if (isAdmin()) {
+              As a Village Administrator, you can edit the village name and regional details.
+            } @else {
+              View details for your assigned village.
+            }
+          </p>
+        </div>
+      </div>
+
+      @if (!isAdmin()) {
+        <div class="profile-notice profile-notice--info">
+          <span class="material-icons">lock</span>
+          <div>
+            <strong>Village name is locked for Scorers</strong>
+            <p>Only the Village Administrator can rename this village or edit geographical details.</p>
+          </div>
+        </div>
+      }
+
+      <div class="profile-form">
+        <div class="profile-form__field">
+          <label>Village Name</label>
+          <div class="input-with-icon">
+            <span class="material-icons">home_work</span>
+            <input
+              type="text"
+              [value]="villageName()"
+              (input)="villageName.set($any($event.target).value)"
+              [disabled]="!isAdmin() || saving()"
+              [placeholder]="'Village name'"
+              [class.input--disabled]="!isAdmin()"
+            />
+            @if (!isAdmin()) {
+              <span class="material-icons lock-indicator" title="Admin only">lock</span>
+            }
+          </div>
+        </div>
+
+        <div class="profile-form__row">
+          <div class="profile-form__field">
+            <label>District (optional)</label>
+            <input
+              type="text"
+              [value]="villageDistrict()"
+              (input)="villageDistrict.set($any($event.target).value)"
+              [disabled]="!isAdmin() || saving()"
+              placeholder="District"
+              [class.input--disabled]="!isAdmin()"
+            />
+          </div>
+          <div class="profile-form__field">
+            <label>State (optional)</label>
+            <input
+              type="text"
+              [value]="villageState()"
+              (input)="villageState.set($any($event.target).value)"
+              [disabled]="!isAdmin() || saving()"
+              placeholder="State"
+              [class.input--disabled]="!isAdmin()"
+            />
+          </div>
+        </div>
+
+        @if (isAdmin()) {
+          <div class="profile-form__footer">
+            <button
+              type="button"
+              class="btn-save-village"
+              (click)="saveVillage()"
+              [disabled]="saving() || !villageName().trim()"
+            >
+              @if (saving()) {
+                <span class="material-icons spin">sync</span>
+                Saving Changes...
+              } @else {
+                <span class="material-icons">save</span>
+                Save Village Changes
+              }
+            </button>
+          </div>
+        }
+      </div>
+    </div>
+  </div>
+</div>

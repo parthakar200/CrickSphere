@@ -10,4 +10,7 @@ router.get('/:idOrSlug', localityController.getLocalityByIdOrSlug);
 // Public: anyone can register a new village to start their journey
 router.post('/', localityController.createLocality);
 
+// Admin-only: update village name or metadata
+router.patch('/:id', authenticate, authorize('admin'), localityController.updateLocality);
+
 module.exports = router;

@@ -71,7 +71,7 @@
             <div class="topbar__dropdown-backdrop" (click)="userMenuOpen.set(false)"></div>
             <div class="topbar__user-menu">
               <div class="topbar__user-menu-role">{{ currentUser()?.role }}</div>
-              <a routerLink="/profile" class="topbar__user-menu-item">
+              <a routerLink="/profile" class="topbar__user-menu-item" (click)="userMenuOpen.set(false)">
                 <span class="material-icons">person</span> Profile
               </a>
               <button type="button" class="topbar__user-menu-item" (click)="logout()">

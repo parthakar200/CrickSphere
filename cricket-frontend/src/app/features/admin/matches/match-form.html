@@ -80,29 +80,75 @@
       </button>
     </div>
 
-    <select formControlName="teamA">
-      <option value="">Select team A</option>
-      @if (isTournamentMode() && form.controls.tournament.value) {
-        @if (tournamentTeams().length > 0) {
-          <optgroup label="Tournament Teams">
-            @for (team of tournamentTeams(); track team._id) {
-              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+    <div class="searchable-team-select">
+      <button
+        type="button"
+        class="searchable-team-select__trigger"
+        [class.searchable-team-select__trigger--open]="dropdownOpenTeamA()"
+        (click)="toggleDropdown('A', $event)"
+      >
+        @if (selectedTeamA(); as team) {
+          <div class="team-option-badge">
+            <span class="team-option-name">{{ team.name }}</span>
+            <span class="team-option-short font-mono">{{ team.shortName }}</span>
+          </div>
+        } @else {
+          <span class="team-placeholder">Select team A...</span>
+        }
+        <span class="material-icons arrow">expand_more</span>
+      </button>
+
+      @if (dropdownOpenTeamA()) {
+        <div class="searchable-team-select__backdrop" (click)="dropdownOpenTeamA.set(false)"></div>
+        <div class="searchable-team-select__menu card-flat" (click)="$event.stopPropagation()">
+          <div class="searchable-team-select__search">
+            <span class="material-icons">search</span>
+            <input
+              type="text"
+              placeholder="Search team name or code..."
+              [value]="searchTeamA()"
+              (input)="searchTeamA.set($any($event.target).value)"
+            />
+            @if (searchTeamA()) {
+              <button type="button" class="clear-btn" (click)="searchTeamA.set('')">
+                <span class="material-icons">close</span>
+              </button>
             }
-          </optgroup>
-        }
-        @if (otherTeams().length > 0) {
-          <optgroup label="Other Available Teams">
-            @for (team of otherTeams(); track team._id) {
-              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+          </div>
+
+          <div class="searchable-team-select__list">
+            @for (team of filteredTeamsA(); track team._id) {
+              <button
+                type="button"
+                class="searchable-team-select__item"
+                [class.searchable-team-select__item--selected]="team._id === form.controls.teamA.value"
+                (click)="selectTeam('A', team)"
+              >
+                <div class="team-info">
+                  <strong>{{ team.name }}</strong>
+                  <span class="team-short font-mono">({{ team.shortName }})</span>
+                </div>
+                @if (team._id === form.controls.teamA.value) {
+                  <span class="material-icons check">check</span>
+                }
+              </button>
+            } @empty {
+              <div class="searchable-team-select__empty">
+                <p>No team found matching "{{ searchTeamA() }}"</p>
+                <button
+                  type="button"
+                  class="btn-create-from-search"
+                  (click)="createFromSearch('A', searchTeamA())"
+                >
+                  <span class="material-icons">add</span>
+                  Create "{{ searchTeamA() }}"
+                </button>
+              </div>
             }
-          </optgroup>
-        }
-      } @else {
-        @for (team of allTeams(); track team._id) {
-          <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
-        }
+          </div>
+        </div>
       }
-    </select>
+    </div>
     @if (form.controls.teamA.invalid && form.controls.teamA.touched) {
       <small class="admin-form__error">Team A is required</small>
     }
@@ -183,29 +229,75 @@
       </button>
     </div>
 
-    <select formControlName="teamB">
-      <option value="">Select team B</option>
-      @if (isTournamentMode() && form.controls.tournament.value) {
-        @if (tournamentTeams().length > 0) {
-          <optgroup label="Tournament Teams">
-            @for (team of tournamentTeams(); track team._id) {
-              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+    <div class="searchable-team-select">
+      <button
+        type="button"
+        class="searchable-team-select__trigger"
+        [class.searchable-team-select__trigger--open]="dropdownOpenTeamB()"
+        (click)="toggleDropdown('B', $event)"
+      >
+        @if (selectedTeamB(); as team) {
+          <div class="team-option-badge">
+            <span class="team-option-name">{{ team.name }}</span>
+            <span class="team-option-short font-mono">{{ team.shortName }}</span>
+          </div>
+        } @else {
+          <span class="team-placeholder">Select team B...</span>
+        }
+        <span class="material-icons arrow">expand_more</span>
+      </button>
+
+      @if (dropdownOpenTeamB()) {
+        <div class="searchable-team-select__backdrop" (click)="dropdownOpenTeamB.set(false)"></div>
+        <div class="searchable-team-select__menu card-flat" (click)="$event.stopPropagation()">
+          <div class="searchable-team-select__search">
+            <span class="material-icons">search</span>
+            <input
+              type="text"
+              placeholder="Search team name or code..."
+              [value]="searchTeamB()"
+              (input)="searchTeamB.set($any($event.target).value)"
+            />
+            @if (searchTeamB()) {
+              <button type="button" class="clear-btn" (click)="searchTeamB.set('')">
+                <span class="material-icons">close</span>
+              </button>
             }
-          </optgroup>
-        }
-        @if (otherTeams().length > 0) {
-          <optgroup label="Other Available Teams">
-            @for (team of otherTeams(); track team._id) {
-              <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
+          </div>
+
+          <div class="searchable-team-select__list">
+            @for (team of filteredTeamsB(); track team._id) {
+              <button
+                type="button"
+                class="searchable-team-select__item"
+                [class.searchable-team-select__item--selected]="team._id === form.controls.teamB.value"
+                (click)="selectTeam('B', team)"
+              >
+                <div class="team-info">
+                  <strong>{{ team.name }}</strong>
+                  <span class="team-short font-mono">({{ team.shortName }})</span>
+                </div>
+                @if (team._id === form.controls.teamB.value) {
+                  <span class="material-icons check">check</span>
+                }
+              </button>
+            } @empty {
+              <div class="searchable-team-select__empty">
+                <p>No team found matching "{{ searchTeamB() }}"</p>
+                <button
+                  type="button"
+                  class="btn-create-from-search"
+                  (click)="createFromSearch('B', searchTeamB())"
+                >
+                  <span class="material-icons">add</span>
+                  Create "{{ searchTeamB() }}"
+                </button>
+              </div>
             }
-          </optgroup>
-        }
-      } @else {
-        @for (team of allTeams(); track team._id) {
-          <option [value]="team._id">{{ team.name }} ({{ team.shortName }})</option>
-        }
+          </div>
+        </div>
       }
-    </select>
+    </div>
     @if (form.controls.teamB.invalid && form.controls.teamB.touched) {
       <small class="admin-form__error">Team B is required</small>
     }
