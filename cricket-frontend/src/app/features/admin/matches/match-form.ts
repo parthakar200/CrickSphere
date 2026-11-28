@@ -80,13 +80,17 @@ export class MatchForm {
   dropdownOpenTeamA = signal(false);
   dropdownOpenTeamB = signal(false);
 
+  /** Track selected team IDs as signals so computed() reacts to form patches */
+  private selectedTeamAId = signal<string>('');
+  private selectedTeamBId = signal<string>('');
+
   selectedTeamA = computed(() => {
-    const id = this.form.controls.teamA.value;
+    const id = this.selectedTeamAId();
     return this.allTeams().find((t) => t._id === id) || null;
   });
 
   selectedTeamB = computed(() => {
-    const id = this.form.controls.teamB.value;
+    const id = this.selectedTeamBId();
     return this.allTeams().find((t) => t._id === id) || null;
   });
 
@@ -124,10 +128,12 @@ export class MatchForm {
   selectTeam(slot: 'A' | 'B', team: Team): void {
     if (slot === 'A') {
       this.form.patchValue({ teamA: team._id });
+      this.selectedTeamAId.set(team._id);
       this.dropdownOpenTeamA.set(false);
       this.searchTeamA.set('');
     } else {
       this.form.patchValue({ teamB: team._id });
+      this.selectedTeamBId.set(team._id);
       this.dropdownOpenTeamB.set(false);
       this.searchTeamB.set('');
     }
@@ -210,10 +216,12 @@ export class MatchForm {
         // Auto-select the new team in the right slot
         if (slot === 'A') {
           this.form.patchValue({ teamA: newTeam._id });
+          this.selectedTeamAId.set(newTeam._id);
           this.showInlineTeamA.set(false);
           this.inlineTeamA.set(blankInlineTeam());
         } else {
           this.form.patchValue({ teamB: newTeam._id });
+          this.selectedTeamBId.set(newTeam._id);
           this.showInlineTeamB.set(false);
           this.inlineTeamB.set(blankInlineTeam());
         }
@@ -287,6 +295,8 @@ export class MatchForm {
       this.form.patchValue({ tournament: '' });
     }
     this.form.patchValue({ teamA: '', teamB: '' });
+    this.selectedTeamAId.set('');
+    this.selectedTeamBId.set('');
   }
 
   onMatchTypeChange(matchType: MatchType): void {

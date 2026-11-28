@@ -83,8 +83,9 @@ export class Topbar {
     { initialValue: [] as Match[] }
   );
 
-  teamLabel(team: Team | string): string {
-    return typeof team === 'string' ? team : team.shortName;
+  teamLabel(team: Team | string | null | undefined): string {
+    if (!team) return 'TBD';
+    return typeof team === 'string' ? team : team.shortName || team.name || 'TBD';
   }
 
   @HostListener('document:click', ['$event'])

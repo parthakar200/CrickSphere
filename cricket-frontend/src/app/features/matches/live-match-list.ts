@@ -59,17 +59,18 @@ export class LiveMatchList {
   );
   recentlyCompleted = () => this.recentlyCompletedResult()?.data ?? [];
 
-  teamLabel(team: Team | string): string {
-    return typeof team === 'string' ? team : team.name;
+  teamLabel(team: Team | string | null | undefined): string {
+    if (!team) return 'Unknown Team';
+    return typeof team === 'string' ? team : team.name || team.shortName || 'Unknown Team';
   }
   
-  winnerName(match: { teamA: Team | string; teamB: Team | string; result: { winner: string | null } }): string {
-    const winner = match.result.winner;
+  winnerName(match: { teamA: Team | string | null; teamB: Team | string | null; result?: { winner: string | null } }): string {
+    const winner = match.result?.winner;
     if (!winner) return '';
     const a = match.teamA;
     const b = match.teamB;
-    if (typeof a !== 'string' && a._id === winner) return a.name;
-    if (typeof b !== 'string' && b._id === winner) return b.name;
+    if (a && typeof a !== 'string' && a._id === winner) return a.name;
+    if (b && typeof b !== 'string' && b._id === winner) return b.name;
     return '';
   }
 }
